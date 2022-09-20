@@ -1,0 +1,19 @@
+menu "Example Configuration"
+
+  config EXAMPLE_WIFI_SSID
+    string "WiFi SSID"
+    default ""
+
+  config EXAMPLE_WIFI_PASSWORD
+    string "WiFi password"
+    default ""
+
+  config EXAMPLE_SERVER_ADDRESS
+    string "Modbus server IP address"
+    default "192.168.1.1"
+
+  config EXAMPLE_SERVER_PORT
+    int "Modbus server port"
+    default "502"    
+
+  endmenu
