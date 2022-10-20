@@ -26,11 +26,7 @@ extern "C" void app_main(void) {
   wifi.SetPassword (wifiPassword);
   wifi.Enable();
 
-PL::EspEthernet ethernet (esp_eth_phy_new_ksz8081, 0, 5, 23, 18);
-ethernet.Initialize();
-ethernet.Enable();
-
-  while (!ethernet.GetIpV4Address().u32)  
+  while (!wifi.GetIpV4Address().u32)  
     vTaskDelay (1);
 
   while (1) {
