@@ -21,13 +21,13 @@ public:
   static const uint8_t defaultNetworkStationAddress = 255;
 
   /// @brief Maximum number of coils or discrete inputs that can be read in one request
-  const uint16_t maxNumberOfModbusBitsToRead = 2000;
+  static const uint16_t maxNumberOfModbusBitsToRead = 2000;
   /// @brief Maximum number of coils that can be written in one request
-  const uint16_t maxNumberOfModbusBitsToWrite = 1968;
+  static const uint16_t maxNumberOfModbusBitsToWrite = 1968;
   /// @brief Maximum number of holding or input registers that can be read in one request
-  const uint16_t maxNumberOfModbusRegistersToRead = 125;
+  static const uint16_t maxNumberOfModbusRegistersToRead = 125;
   /// @brief Maximum number of holding registers that can be written in one request
-  const uint16_t maxNumberOfModbusRegistersToWrite = 123;
+  static const uint16_t maxNumberOfModbusRegistersToWrite = 123;
 
   /// @brief Get Modbus protocol
   /// @return protocol
