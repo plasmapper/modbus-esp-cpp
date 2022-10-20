@@ -1,4 +1,4 @@
-# Modbus server user-defined function example
+# Modbus Server User-Defined Function Example
 
 1. CustomModbusServer class inherits ModbusServer class and overrides ReadRtuData and HandleRequest methods to implement user-defined function with function code 100 that receives 1 byte and responds with the same byte + data array of random byte values (the array size is determined by the received value).
 2. CustomModbusServer is created with UART0 as a port, Modbus RTU protocol and station address 1.

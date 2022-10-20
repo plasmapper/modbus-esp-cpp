@@ -1,4 +1,4 @@
-# Modbus server memory areas example
+# Modbus Server Memory Areas Example
 
 1. UART Modbus server is created with UART0 as a port, Modbus RTU protocol and station address 1.
 2. UART0 is initialized.

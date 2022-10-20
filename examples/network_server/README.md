@@ -1,4 +1,4 @@
-# Network Modbus server example
+# Network Modbus Server Example
 
 1. Network Modbus server is created at port 502.
 2. Internal ESP Wi-Fi station interface is created and initialized.

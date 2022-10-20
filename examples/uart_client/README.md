@@ -1,4 +1,4 @@
-# UART Modbus client example
+# UART Modbus Client Example
 
 1. UART Modbus client is created with UART0 as a port, Modbus RTU protocol and station address 1.
 2. UART0 is initialized.

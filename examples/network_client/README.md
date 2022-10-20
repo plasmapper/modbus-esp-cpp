@@ -1,4 +1,4 @@
-# Network Modbus client example
+# Network Modbus Client Example
 
 1. Internal ESP Wi-Fi station interface is created and initialized.
 2. Network Modbus client is created with IP address and port from project configuration (can be changed in `Example` menu of [Project Configuration](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/kconfig.html)).
