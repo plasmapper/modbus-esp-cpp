@@ -66,7 +66,6 @@ esp_err_t CustomModbusServer::HandleRequest (PL::Stream& stream, uint8_t station
 
     if (dataBuffer.size < 1 + requestValue)
       return WriteExceptionFrame (stream, stationAddress, functionCode, PL::ModbusException::illegalDataValue, transactionId);
-
     
     for (int i = 0; i < requestValue; i++)
       ((uint8_t*)dataBuffer.data)[i+1] = esp_random();
