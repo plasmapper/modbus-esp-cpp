@@ -10,4 +10,4 @@
     - holding registers (addresses 0..249)
     - input registers (addresses 0..249)
 6. The Wi-Fi station is enabled.
-7. The server is enabled when the Wi-Fi staion interface gets an IP address.
+7. The server is enabled when the Wi-Fi station interface gets an IP address.
