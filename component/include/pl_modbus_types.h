@@ -58,6 +58,7 @@ enum class ModbusFunctionCode : uint8_t {
   /// @brief write multiple holding registers
   writeMultipleHoldingRegisters = 16
 };
+
 // Modbus exception
 enum class ModbusException : uint8_t {
   /// @brief no exception
