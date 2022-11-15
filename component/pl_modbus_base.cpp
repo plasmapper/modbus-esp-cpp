@@ -94,8 +94,8 @@ esp_err_t ModbusBase::SetDelayAfterRead (TickType_t delay) {
 //==============================================================================
 
 ModbusBase::ModbusBase (ModbusProtocol protocol, std::shared_ptr<Buffer> buffer, TickType_t readTimeout) : protocol (protocol), buffer (buffer), readTimeout (readTimeout) {
-  if (protocol != ModbusProtocol::rtu || protocol != ModbusProtocol::ascii || protocol != ModbusProtocol::tcp)
-    protocol = ModbusProtocol::rtu;
+  if (protocol != ModbusProtocol::rtu && protocol != ModbusProtocol::ascii && protocol != ModbusProtocol::tcp)
+    this->protocol = ModbusProtocol::rtu;
   InitializeDataBuffer();
 }
 
