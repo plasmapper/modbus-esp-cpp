@@ -1,4 +1,9 @@
 #include "pl_modbus_base.h"
+#include "esp_check.h"
+
+//==============================================================================
+
+static const char* TAG = "pl_modbus_base";
 
 //==============================================================================
 
@@ -52,13 +57,10 @@ ModbusProtocol ModbusBase::GetProtocol() {
 
 esp_err_t ModbusBase::SetProtocol (ModbusProtocol protocol) {
   LockGuard lg (*this);
-  if (protocol == ModbusProtocol::rtu || protocol == ModbusProtocol::ascii || protocol == ModbusProtocol::tcp) {
-    this->protocol = protocol;
-    InitializeDataBuffer();
-    return ESP_OK;
-  }
-  else
-    return ESP_ERR_INVALID_ARG;
+  ESP_RETURN_ON_FALSE (protocol == ModbusProtocol::rtu || protocol == ModbusProtocol::ascii || protocol == ModbusProtocol::tcp, ESP_ERR_INVALID_ARG, TAG, "invalid protocol");
+  this->protocol = protocol;
+  InitializeDataBuffer();
+  return ESP_OK;
 }
 
 //==============================================================================
@@ -107,49 +109,54 @@ ModbusBase::ModbusBase (ModbusProtocol protocol, size_t bufferSize, TickType_t r
 
 esp_err_t ModbusBase::ReadFrame (Stream& stream, uint8_t& stationAddress, ModbusFunctionCode& functionCode, size_t& dataSize, uint16_t& transactionId) {
   esp_err_t error;
-  PL_RETURN_ON_ERROR (stream.SetReadTimeout (readTimeout));
+  ESP_RETURN_ON_ERROR (stream.SetReadTimeout (readTimeout), TAG, "set timeout failed");
 
   if (protocol == ModbusProtocol::rtu) {
     transactionId = 0;
-    PL_RETURN_ON_ERROR (stream.Read (&stationAddress, 1));
-    PL_RETURN_ON_ERROR (stream.Read (&functionCode, 1));
+    ESP_RETURN_ON_ERROR (stream.Read (&stationAddress, 1), TAG, "read station address failed");
+    ESP_RETURN_ON_ERROR (stream.Read (&functionCode, 1), TAG, "read function code failed");
     if ((error = ReadRtuData (stream, functionCode, dataSize)) == ESP_OK) {
       uint16_t crc;
-      PL_RETURN_ON_ERROR (stream.Read (&crc, 2));
+      ESP_RETURN_ON_ERROR (stream.Read (&crc, 2), TAG, "read crc failed");
       vTaskDelay (delayAfterRead);
       if (buffer->size >= dataSize + 2) {
         ((uint8_t*)buffer->data)[0] = stationAddress;
         ((uint8_t*)buffer->data)[1] = (uint8_t)functionCode;
-        return (Crc (dataSize + 2) == crc) ? ESP_OK : ESP_ERR_INVALID_CRC; 
+        ESP_RETURN_ON_FALSE (Crc (dataSize + 2) == crc, ESP_ERR_INVALID_CRC, TAG, "invalid crc");
+        return ESP_OK;
       }
-      else
-        return ESP_ERR_INVALID_SIZE;
+      else {
+        ESP_RETURN_ON_ERROR (ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
+      }
     }
     else {
       if (error == ESP_ERR_INVALID_SIZE)
         stream.Read (NULL, 2);
       vTaskDelay (delayAfterRead);
-      return error;
+      ESP_RETURN_ON_ERROR (error, TAG, "read RTU data failed");
+      return ESP_OK;
     }
   }
 
   if (protocol == ModbusProtocol::ascii) {
     transactionId = 0;
-    PL_RETURN_ON_ERROR (stream.ReadUntil (':'));
+    ESP_RETURN_ON_ERROR (stream.ReadUntil (':'), TAG, "read ':' failed");
     for (size_t i = 0; i < buffer->size; i++) {
       uint8_t asciiData[2];
-      PL_RETURN_ON_ERROR (stream.Read (asciiData, 2));
+      ESP_RETURN_ON_ERROR (stream.Read (asciiData, 2), TAG, "read ASCII failed");
       if (asciiData[0] == '\r' && asciiData[1] == '\n') {
         dataSize = (i >= 3) ? (i - 3) : 0;
         vTaskDelay (delayAfterRead);
-        return (i >= 3) ? (Lrc (i) ? ESP_ERR_INVALID_CRC : ESP_OK) : ESP_ERR_INVALID_RESPONSE;
+        ESP_RETURN_ON_FALSE (i >= 3, ESP_ERR_INVALID_RESPONSE, TAG, "invalid request");
+        ESP_RETURN_ON_FALSE (Lrc (i) == 0, ESP_ERR_INVALID_CRC, TAG, "invalid crc");
+        return ESP_OK;
       }
       else {
         if (asciiData[0] < '0' || (asciiData[0] > '9' && asciiData[0] < 'A') || asciiData[0] > 'F' ||
             asciiData[1] < '0' || (asciiData[1] > '9' && asciiData[1] < 'A') || asciiData[1] > 'F') {
-          PL_RETURN_ON_ERROR (stream.ReadUntil ('\n'));
+          ESP_RETURN_ON_ERROR (stream.ReadUntil ('\n'), TAG, "read until \\n failed");
           vTaskDelay (delayAfterRead);
-          return ESP_ERR_INVALID_RESPONSE;
+          ESP_RETURN_ON_ERROR (ESP_ERR_INVALID_RESPONSE, TAG, "invalid ASCII data");
         }
         ((uint8_t*)buffer->data)[i] = ((asciiData[0] - ((asciiData[0] < 'A')?('0'):('A' - 10))) << 4);
         ((uint8_t*)buffer->data)[i] += (asciiData[1] - ((asciiData[1] < 'A')?('0'):('A' - 10)));
@@ -159,57 +166,57 @@ esp_err_t ModbusBase::ReadFrame (Stream& stream, uint8_t& stationAddress, Modbus
           functionCode = (ModbusFunctionCode)((uint8_t*)buffer->data)[1];
       }
     }
-    PL_RETURN_ON_ERROR (stream.ReadUntil ('\n'));
+    ESP_RETURN_ON_ERROR (stream.ReadUntil ('\n'), TAG, "read until \\n failed");
     vTaskDelay (delayAfterRead);
-    return ESP_ERR_INVALID_SIZE;
+    ESP_RETURN_ON_ERROR (ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
   }
 
   if (protocol == ModbusProtocol::tcp) {
     uint16_t protocolId;
     uint16_t tcpDataLength;
-    PL_RETURN_ON_ERROR (stream.Read (&transactionId, 2));
+    ESP_RETURN_ON_ERROR (stream.Read (&transactionId, 2), TAG, "read transaction ID failed");
     transactionId = __builtin_bswap16 (transactionId);
     
-    PL_RETURN_ON_ERROR (stream.Read (&protocolId, 2));
+    ESP_RETURN_ON_ERROR (stream.Read (&protocolId, 2), TAG, "read protocol ID failed");
     if (protocolId != 0) {
       stream.SetReadTimeout (2);
       stream.Read (NULL, SIZE_MAX);
       vTaskDelay (delayAfterRead);
-      return ESP_ERR_INVALID_RESPONSE;
+      ESP_RETURN_ON_ERROR (ESP_ERR_INVALID_RESPONSE, TAG, "invalid protocol id");
     }
     
-    PL_RETURN_ON_ERROR (stream.Read (&tcpDataLength, 2));
+    ESP_RETURN_ON_ERROR (stream.Read (&tcpDataLength, 2), TAG, "read data length failed");
     tcpDataLength = __builtin_bswap16 (tcpDataLength);
     if (tcpDataLength < 2) {
       stream.Read (NULL, tcpDataLength);
       vTaskDelay (delayAfterRead);
-      return ESP_ERR_INVALID_RESPONSE;
+      ESP_RETURN_ON_ERROR (ESP_ERR_INVALID_RESPONSE, TAG, "invalid data length");
     }
 
-    PL_RETURN_ON_ERROR (stream.Read (&stationAddress, 1));
-    PL_RETURN_ON_ERROR (stream.Read (&functionCode, 1));
+    ESP_RETURN_ON_ERROR (stream.Read (&stationAddress, 1), TAG, "read station address failed");
+    ESP_RETURN_ON_ERROR (stream.Read (&functionCode, 1), TAG, "read function code failed");
     dataSize = tcpDataLength - 2;
     if (buffer->size >= dataSize + 8) {
-      PL_RETURN_ON_ERROR (stream.Read (*buffer, 8, dataSize));
+      ESP_RETURN_ON_ERROR (stream.Read (*buffer, 8, dataSize), TAG, "read data failed");
       vTaskDelay (delayAfterRead);
       return ESP_OK;
     }
     else {
-      PL_RETURN_ON_ERROR (stream.Read (NULL, dataSize));
+      ESP_RETURN_ON_ERROR (stream.Read (NULL, dataSize), TAG, "read data failed");
       vTaskDelay (delayAfterRead);
-      return ESP_ERR_INVALID_SIZE;
+      ESP_RETURN_ON_ERROR (ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
     }
   }
 
-  return ESP_ERR_NOT_SUPPORTED;
+  ESP_RETURN_ON_ERROR (ESP_ERR_NOT_SUPPORTED, TAG, "protocol is not supported");
+  return ESP_OK;
 }
 
 //==============================================================================
 
 esp_err_t ModbusBase::WriteFrame (Stream& stream, uint8_t stationAddress, ModbusFunctionCode functionCode, size_t dataSize, uint16_t transactionId) {
   if (protocol == ModbusProtocol::rtu) {
-    if (buffer->size < dataSize + 4)
-      return ESP_ERR_INVALID_SIZE;
+    ESP_RETURN_ON_FALSE (buffer->size >= dataSize + 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
     ((uint8_t*)buffer->data)[0] = stationAddress;
     ((uint8_t*)buffer->data)[1] = (uint8_t)functionCode;
     *(uint16_t*)((uint8_t*)buffer->data + 2 + dataSize) = Crc (2 + dataSize);
@@ -221,12 +228,12 @@ esp_err_t ModbusBase::WriteFrame (Stream& stream, uint8_t stationAddress, Modbus
         msDelay = 28000 / baudrate + 1;
     }
     ets_delay_us (msDelay * 1000);
-    return stream.Write (*buffer, 0, dataSize + 4);
+    ESP_RETURN_ON_ERROR (stream.Write (*buffer, 0, dataSize + 4), TAG, "stream write error");
+    return ESP_OK;
   }
 
   if (protocol == ModbusProtocol::ascii) {
-    if (buffer->size < dataSize * 2 + 9)
-      return ESP_ERR_INVALID_SIZE;
+    ESP_RETURN_ON_FALSE (buffer->size >= dataSize * 2 + 9, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
     ((uint8_t*)buffer->data)[0] = stationAddress;
     ((uint8_t*)buffer->data)[1] = (uint8_t)functionCode;
     ((uint8_t*)buffer->data)[dataSize + 2] = Lrc (dataSize + 2);
@@ -240,18 +247,20 @@ esp_err_t ModbusBase::WriteFrame (Stream& stream, uint8_t stationAddress, Modbus
     ((uint8_t*)buffer->data)[dataSize * 2 + 7] = '\r';
     ((uint8_t*)buffer->data)[dataSize * 2 + 8] = '\n';
 
-    return stream.Write (*buffer, 0, dataSize * 2 + 9);
+    ESP_RETURN_ON_ERROR (stream.Write (*buffer, 0, dataSize * 2 + 9), TAG, "stream write error");
+    return ESP_OK;
   }
 
   if (protocol == ModbusProtocol::tcp) {
-    if (buffer->size < dataSize + 8 || dataSize > 0xFFFD)
-      return ESP_ERR_INVALID_SIZE;
+    ESP_RETURN_ON_FALSE (buffer->size >= dataSize + 8 && dataSize <= 0xFFFD, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
     ((uint16_t*)buffer->data)[0] = __builtin_bswap16 (transactionId);
     ((uint16_t*)buffer->data)[1] = 0;
     ((uint16_t*)buffer->data)[2] = __builtin_bswap16 ((uint16_t)(dataSize + 2));
     ((uint8_t*)buffer->data)[6] = stationAddress;
     ((uint8_t*)buffer->data)[7] = (uint8_t)functionCode;
-    return stream.Write (*buffer, 0, dataSize + 8);
+
+    ESP_RETURN_ON_ERROR (stream.Write (*buffer, 0, dataSize + 8), TAG, "stream write error");
+    return ESP_OK;
   }
 
   return ESP_ERR_NOT_SUPPORTED;
