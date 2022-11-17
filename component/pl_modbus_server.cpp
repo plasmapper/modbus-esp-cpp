@@ -131,18 +131,6 @@ esp_err_t ModbusServer::SetStationAddress (uint8_t stationAddress) {
 
 //==============================================================================
 
-size_t ModbusServer::GetMaxNumberOfClients() {
-  return interface == ModbusInterface::uart ? 1 : tcpServer->GetMaxNumberOfClients();
-}
-
-//==============================================================================
-
-esp_err_t ModbusServer::SetMaxNumberOfClients (size_t maxNumberOfClients) {
-  return interface == ModbusInterface::uart ? ESP_ERR_NOT_SUPPORTED : tcpServer->SetMaxNumberOfClients (maxNumberOfClients);
-}
-
-//==============================================================================
-
 esp_err_t ModbusServer::SetTaskParameters (const TaskParameters& taskParameters) {
   if (interface == ModbusInterface::uart)
     return uartServer->SetTaskParameters (taskParameters);

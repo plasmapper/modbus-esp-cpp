@@ -30,9 +30,9 @@ extern "C" void app_main(void) {
   wifi.gotIpV4AddressEvent.AddHandler (wiFiGotIpEventHandler, &WiFiGotIpEventHandler::OnGotIpV4Address);
   wifi.gotIpV6AddressEvent.AddHandler (wiFiGotIpEventHandler, &WiFiGotIpEventHandler::OnGotIpV6Address);
 
-  server.SetMaxNumberOfClients (2);
   if (auto baseServer = server.GetBaseServer().lock()) {
     PL::TcpServer& tcpServer = (PL::TcpServer&)*baseServer;
+    tcpServer.SetMaxNumberOfClients (2);
     tcpServer.DisableNagleAlgorithm();
     tcpServer.EnableKeepAlive();
     tcpServer.SetKeepAliveIdleTime (60);

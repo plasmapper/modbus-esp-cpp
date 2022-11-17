@@ -87,15 +87,6 @@ public:
   /// @return error code
   esp_err_t SetStationAddress (uint8_t stationAddress);
 
-  /// @brief Get the maximum number of server clients (for network server)
-  /// @return number of clients
-  size_t GetMaxNumberOfClients();
-  
-  /// @brief Set the maximum number of server clients (for network server)
-  /// @param maxNumberOfClients number of clients
-  /// @return error code
-  esp_err_t SetMaxNumberOfClients (size_t maxNumberOfClients);
-
   /// @brief Set the server task parameters
   /// @param taskParameters task parameters
   /// @return error code
