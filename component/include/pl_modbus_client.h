@@ -73,7 +73,7 @@ public:
   /// @param responseData holding register values
   /// @param exception Modbus exception
   /// @return error code
-  esp_err_t ReadHoldingRegisters (uint16_t address, uint16_t numberOfItems, uint16_t* responseData, ModbusException* exception);
+  esp_err_t ReadHoldingRegisters (uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception);
 
   /// @brief Read input registers
   /// @param address first input register address
@@ -81,7 +81,7 @@ public:
   /// @param responseData input register values
   /// @param exception Modbus exception
   /// @return error code
-  esp_err_t ReadInputRegisters (uint16_t address, uint16_t numberOfItems, uint16_t* responseData, ModbusException* exception);
+  esp_err_t ReadInputRegisters (uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception);
 
   /// @brief Write single coil
   /// @param address coil address
@@ -111,7 +111,7 @@ public:
   /// @param requestData holding register values
   /// @param exception Modbus exception
   /// @return error code  
-  esp_err_t WriteMultipleHoldingRegisters (uint16_t address, uint16_t numberOfItems, const uint16_t* requestData, ModbusException* exception);
+  esp_err_t WriteMultipleHoldingRegisters (uint16_t address, uint16_t numberOfItems, const void* requestData, ModbusException* exception);
 
   /// @brief Get the Modbus station address
   /// @return station address
@@ -136,7 +136,7 @@ private:
   
   esp_err_t Command (ModbusFunctionCode functionCode, size_t requestDataSize, size_t& responseDataSize, ModbusException* exception);
   esp_err_t ReadBits (ModbusFunctionCode functionCode, uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception);
-  esp_err_t ReadRegisters (ModbusFunctionCode functionCode, uint16_t address, uint16_t numberOfItems, uint16_t* responseData, ModbusException* exception);
+  esp_err_t ReadRegisters (ModbusFunctionCode functionCode, uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception);
 
   struct AddressRange {
     uint16_t address;

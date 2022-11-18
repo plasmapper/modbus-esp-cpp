@@ -96,13 +96,13 @@ esp_err_t ModbusClient::ReadDiscreteInputs (uint16_t address, uint16_t numberOfI
 
 //==============================================================================
 
-esp_err_t ModbusClient::ReadHoldingRegisters (uint16_t address, uint16_t numberOfItems, uint16_t* responseData, ModbusException* exception) {
+esp_err_t ModbusClient::ReadHoldingRegisters (uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception) {
   return ReadRegisters (ModbusFunctionCode::readHoldingRegisters, address, numberOfItems, responseData, exception);
 }
 
 //==============================================================================
 
-esp_err_t ModbusClient::ReadInputRegisters (uint16_t address, uint16_t numberOfItems, uint16_t* responseData, ModbusException* exception) {
+esp_err_t ModbusClient::ReadInputRegisters (uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception) {
   return ReadRegisters (ModbusFunctionCode::readInputRegisters, address, numberOfItems, responseData, exception);
 }
 
@@ -191,7 +191,7 @@ esp_err_t ModbusClient::WriteMultipleCoils (uint16_t address, uint16_t numberOfI
 
 //==============================================================================
 
-esp_err_t ModbusClient::WriteMultipleHoldingRegisters (uint16_t address, uint16_t numberOfItems, const uint16_t* requestData, ModbusException* exception) {
+esp_err_t ModbusClient::WriteMultipleHoldingRegisters (uint16_t address, uint16_t numberOfItems, const void* requestData, ModbusException* exception) {
   LockGuard lgClient (*this);
   Buffer& dataBuffer = GetDataBuffer();
   LockGuard lgBuffer (dataBuffer);
@@ -211,7 +211,7 @@ esp_err_t ModbusClient::WriteMultipleHoldingRegisters (uint16_t address, uint16_
 
     if (requestData) {
       for (uint_fast16_t i = 0; i < addressRange.numberOfItems; i++)
-        ((uint16_t*)((uint8_t*)dataBuffer.data + 5))[i] = __builtin_bswap16 (requestData[addressRange.address - address + i]);
+        ((uint16_t*)((uint8_t*)dataBuffer.data + 5))[i] = __builtin_bswap16 (((uint16_t*)requestData)[addressRange.address - address + i]);
     }
 
     size_t responseDataSize; 
@@ -373,7 +373,7 @@ esp_err_t ModbusClient::ReadBits (ModbusFunctionCode functionCode, uint16_t addr
 
 //==============================================================================
 
-esp_err_t ModbusClient::ReadRegisters (ModbusFunctionCode functionCode, uint16_t address, uint16_t numberOfItems, uint16_t* responseData, ModbusException* exception) {
+esp_err_t ModbusClient::ReadRegisters (ModbusFunctionCode functionCode, uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception) {
   LockGuard lgClient (*this);
   Buffer& dataBuffer = GetDataBuffer();
   LockGuard lgBuffer (dataBuffer);
@@ -395,7 +395,7 @@ esp_err_t ModbusClient::ReadRegisters (ModbusFunctionCode functionCode, uint16_t
 
     if (responseData) {
       for (uint_fast16_t i = 0; i < addressRange.numberOfItems; i++)
-        responseData[addressRange.address - address + i] = __builtin_bswap16 (((uint16_t*)((uint8_t*)dataBuffer.data + 1))[i]);
+        ((uint16_t*)responseData)[addressRange.address - address + i] = __builtin_bswap16 (((uint16_t*)((uint8_t*)dataBuffer.data + 1))[i]);
     }
   }
   return ESP_OK;
