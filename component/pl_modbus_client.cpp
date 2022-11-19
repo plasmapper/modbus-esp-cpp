@@ -337,8 +337,8 @@ esp_err_t ModbusClient::Command (ModbusFunctionCode functionCode, size_t request
   if ((uint8_t)responseFunctionCode & 0x80) {
     ESP_RETURN_ON_FALSE (responseDataSize == 1, ESP_ERR_INVALID_RESPONSE, TAG, "invalid exception data size");
     if (exception)
-      *exception = (ModbusException)(((uint8_t*)dataBuffer.data)[0]);
-    ESP_RETURN_ON_ERROR (ESP_FAIL, TAG, "Modbus exception (%d)", (int)*exception);
+      *exception = (ModbusException)(*(uint8_t*)dataBuffer.data);
+    ESP_RETURN_ON_ERROR (ESP_FAIL, TAG, "Modbus exception (%d)", *(uint8_t*)dataBuffer.data);
   }
 
   return ESP_OK;
