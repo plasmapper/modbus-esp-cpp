@@ -24,25 +24,6 @@ ModbusMemoryArea::ModbusMemoryArea (ModbusMemoryType type, uint16_t address, voi
 
 //==============================================================================
 
-ModbusMemoryArea::ModbusMemoryArea (ModbusMemoryType type, uint16_t address, void* data, size_t size, std::shared_ptr<ModbusMemoryArea> baseMemoryArea) :
-  Buffer (data, size, baseMemoryArea), type (type), address (address), numberOfItems (GetNumberOfItems()), baseMemoryArea (baseMemoryArea) {}
-
-//==============================================================================
-
-void ModbusMemoryArea::OnRead() {
-  if (baseMemoryArea)
-    baseMemoryArea->OnRead();
-}
-
-//==============================================================================
-
-void ModbusMemoryArea::OnWrite() {
-  if (baseMemoryArea)
-    baseMemoryArea->OnWrite();
-}
-
-//==============================================================================
-
 size_t ModbusMemoryArea::GetNumberOfItems() {
   if (type == ModbusMemoryType::coils || type == ModbusMemoryType::discreteInputs)
     return std::min (size * 8, (size_t)(0xFFFF - address) + 1);

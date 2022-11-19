@@ -10,5 +10,4 @@
    - 5 holding and 5 input registers (addresses 10..14) mapped to the same memory area with typed access.
    - 5 holding registers (addresses 15..19) with first register LSB accessible as coils (addresses 15..22) with typed access.
    - Dynamic input register (address 20) that contains the uptime value in seconds.
-   - Dynamic input register (address 21) that duplicates register 20.
 6. UART Modbus server is enabled.

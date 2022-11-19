@@ -35,7 +35,7 @@ std::vector<std::string> protocolNames = {"RTU", "ASCII", "TCP"};
 // 250 holding/input registers and 4000 coils/digital inputs).
 const size_t numberOfRegisters = 250;
 const size_t numberOfBits = numberOfRegisters * 16;
-auto serverMemory = std::make_shared<PL::Buffer>(numberOfRegisters * 2);
+auto serverHR = std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::holdingRegisters, 0, numberOfRegisters * 2);
 const size_t numberOfIterations = 100;
 
 const PL::ModbusFunctionCode userDefinedFunctionCode = (PL::ModbusFunctionCode)100;
@@ -88,11 +88,11 @@ extern "C" void app_main(void) {
   TEST_ASSERT (server.SetDelayAfterRead (0) == ESP_OK);
   TEST_ASSERT (client.SetDelayAfterRead (0) == ESP_OK);
 
-  esp_fill_random (serverMemory->data, numberOfRegisters * 2);
-  TEST_ASSERT (server.AddMemoryArea (PL::ModbusMemoryType::coils, 0, serverMemory) == ESP_OK);
-  TEST_ASSERT (server.AddMemoryArea (PL::ModbusMemoryType::discreteInputs, 0, serverMemory) == ESP_OK);
-  TEST_ASSERT (server.AddMemoryArea (PL::ModbusMemoryType::holdingRegisters, 0, serverMemory) == ESP_OK);
-  TEST_ASSERT (server.AddMemoryArea (PL::ModbusMemoryType::inputRegisters, 0, serverMemory) == ESP_OK);
+  esp_fill_random (serverHR->data, numberOfRegisters * 2);
+  server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::coils, 0, serverHR->data, serverHR->size, serverHR));
+  server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea> (PL::ModbusMemoryType::discreteInputs, 0, serverHR->data, serverHR->size, serverHR));
+  server.AddMemoryArea (serverHR);
+  server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::inputRegisters, 0, serverHR->data, serverHR->size, serverHR));
   TEST_ASSERT (server.Enable() == ESP_OK);
   TEST_ASSERT (server.IsEnabled());
 
@@ -162,7 +162,7 @@ void TestReadCoils() {
     TEST_ASSERT (client.ReadCoils (testAddress, testNumberOfBits, dest, &exception) == ESP_OK);
     TEST_ASSERT_EQUAL (PL::ModbusException::noException, exception);
     for (int j = 0; j < testNumberOfBits; j++) {
-      TEST_ASSERT_EQUAL ((((uint8_t*)serverMemory->data)[(testAddress + j) / 8] >> ((testAddress + j) % 8)) & 1, (dest[j / 8] >> (j % 8)) & 1);
+      TEST_ASSERT_EQUAL ((((uint8_t*)serverHR->data)[(testAddress + j) / 8] >> ((testAddress + j) % 8)) & 1, (dest[j / 8] >> (j % 8)) & 1);
     }
     delete[] dest;
   }
@@ -179,7 +179,7 @@ void TestReadDiscreteInputs() {
     TEST_ASSERT (client.ReadDiscreteInputs (testAddress, testNumberOfBits, dest, &exception) == ESP_OK);
     TEST_ASSERT_EQUAL (PL::ModbusException::noException, exception);
     for (int j = 0; j < testNumberOfBits; j++) {
-      TEST_ASSERT_EQUAL ((((uint8_t*)serverMemory->data)[(testAddress + j) / 8] >> ((testAddress + j) % 8)) & 1, (dest[j / 8] >> (j % 8)) & 1);
+      TEST_ASSERT_EQUAL ((((uint8_t*)serverHR->data)[(testAddress + j) / 8] >> ((testAddress + j) % 8)) & 1, (dest[j / 8] >> (j % 8)) & 1);
     }
     delete[] dest;
   }
@@ -196,7 +196,7 @@ void TestReadHoldingRegisters() {
     TEST_ASSERT (client.ReadHoldingRegisters (testAddress, testNumberOfRegisters, dest, &exception) == ESP_OK);
     TEST_ASSERT_EQUAL (PL::ModbusException::noException, exception);
     for (int j = 0; j < testNumberOfRegisters; j++) {
-      TEST_ASSERT_EQUAL (((uint16_t*)serverMemory->data)[testAddress + j], dest[j]);
+      TEST_ASSERT_EQUAL (((uint16_t*)serverHR->data)[testAddress + j], dest[j]);
     }
     delete[] dest;
   }
@@ -213,7 +213,7 @@ void TestReadInputRegisters() {
     TEST_ASSERT (client.ReadInputRegisters (testAddress, testNumberOfRegisters, dest, &exception) == ESP_OK);
     TEST_ASSERT_EQUAL (PL::ModbusException::noException, exception);
     for (int j = 0; j < testNumberOfRegisters; j++) {
-      TEST_ASSERT_EQUAL (((uint16_t*)serverMemory->data)[testAddress + j], dest[j]);
+      TEST_ASSERT_EQUAL (((uint16_t*)serverHR->data)[testAddress + j], dest[j]);
     }
     delete[] dest;
   }
@@ -228,7 +228,7 @@ void TestWriteSingleCoil() {
     PL::ModbusException exception;
     TEST_ASSERT (client.WriteSingleCoil (testAddress, testValue, &exception) == ESP_OK);
     TEST_ASSERT_EQUAL (PL::ModbusException::noException, exception);
-    TEST_ASSERT_EQUAL (testValue, (((uint8_t*)serverMemory->data)[testAddress / 8] >> (testAddress % 8)) & 1);
+    TEST_ASSERT_EQUAL (testValue, (((uint8_t*)serverHR->data)[testAddress / 8] >> (testAddress % 8)) & 1);
   }
 }
 
@@ -241,7 +241,7 @@ void TestWriteSingleHoldingRegister() {
     PL::ModbusException exception;
     TEST_ASSERT (client.WriteSingleHoldingRegister (testAddress, testValue, &exception) == ESP_OK);
     TEST_ASSERT_EQUAL (PL::ModbusException::noException, exception);
-    TEST_ASSERT_EQUAL (testValue, ((uint16_t*)serverMemory->data)[testAddress]);
+    TEST_ASSERT_EQUAL (testValue, ((uint16_t*)serverHR->data)[testAddress]);
   }
 }
 
@@ -257,7 +257,7 @@ void TestWriteMultipleCoils() {
     TEST_ASSERT (client.WriteMultipleCoils (testAddress, testNumberOfBits, src, &exception) == ESP_OK);
     TEST_ASSERT_EQUAL (PL::ModbusException::noException, exception);
     for (int j = 0; j < testNumberOfBits; j++) {
-      TEST_ASSERT_EQUAL ((src[j / 8] >> (j % 8)) & 1, (((uint8_t*)serverMemory->data)[(testAddress + j) / 8] >> ((testAddress + j) % 8)) & 1);
+      TEST_ASSERT_EQUAL ((src[j / 8] >> (j % 8)) & 1, (((uint8_t*)serverHR->data)[(testAddress + j) / 8] >> ((testAddress + j) % 8)) & 1);
     }
     delete[] src;
   }
@@ -275,7 +275,7 @@ void TestWriteMultipleHoldingRegisters() {
     TEST_ASSERT (client.WriteMultipleHoldingRegisters (testAddress, testNumberOfRegisters, src, &exception) == ESP_OK);
     TEST_ASSERT_EQUAL (PL::ModbusException::noException, exception);
     for (int j = 0; j < testNumberOfRegisters; j++) {
-      TEST_ASSERT_EQUAL (src[j], ((uint16_t*)serverMemory->data)[testAddress + j]);
+      TEST_ASSERT_EQUAL (src[j], ((uint16_t*)serverHR->data)[testAddress + j]);
     }
     delete[] src;
   }

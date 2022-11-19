@@ -39,13 +39,15 @@ extern "C" void app_main(void) {
     tcpServer.SetKeepAliveInterval (1);
     tcpServer.SetKeepAliveCount (5);
   }
+  
   // Coils, digital inputs, holding registers and input registers all mapped to the same area.
-  // 250 holding/input registers and 4000 coils/digital inputs.
-  auto buffer = std::make_shared<PL::Buffer>(500);
-  server.AddMemoryArea (PL::ModbusMemoryType::coils, 0, buffer);
-  server.AddMemoryArea (PL::ModbusMemoryType::discreteInputs, 0, buffer);
-  server.AddMemoryArea (PL::ModbusMemoryType::holdingRegisters, 0, buffer);
-  server.AddMemoryArea (PL::ModbusMemoryType::inputRegisters, 0, buffer);
+  // 250 holding/input registers and 4000 coils/digital inputs).
+  auto holdingRegisters = std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::holdingRegisters, 0, 500);
+  server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::coils, 0, holdingRegisters->data, holdingRegisters->size, holdingRegisters));
+  server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::discreteInputs, 0, holdingRegisters->data, holdingRegisters->size, holdingRegisters));
+  server.AddMemoryArea (holdingRegisters);
+  server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::inputRegisters, 0, holdingRegisters->data, holdingRegisters->size, holdingRegisters));
+  server.Enable();
 
   wifi.Enable();
 

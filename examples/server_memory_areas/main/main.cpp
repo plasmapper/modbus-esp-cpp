@@ -72,9 +72,9 @@ extern "C" void app_main(void) {
   }
 
   // 5 holding and 5 input registers (addresses 10..14) mapped to the same memory area with typed access
-  auto typedCombinedRegisters = std::make_shared<PL::TypedBuffer<TypedRegisterData>>();
-  server.AddMemoryArea (PL::ModbusMemoryType::holdingRegisters, 10, typedCombinedRegisters);
-  server.AddMemoryArea (PL::ModbusMemoryType::inputRegisters, 10, typedCombinedRegisters);
+  auto typedCombinedRegisters = std::make_shared<PL::ModbusTypedMemoryArea<TypedRegisterData>>(PL::ModbusMemoryType::holdingRegisters, 10);
+  server.AddMemoryArea (typedCombinedRegisters);
+  server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::inputRegisters, 10, typedCombinedRegisters->data, typedCombinedRegisters->size, typedCombinedRegisters));
   // Example of data access in program
   if (1) {
     PL::LockGuard lg (*typedCombinedRegisters);
@@ -82,9 +82,9 @@ extern "C" void app_main(void) {
   }
 
   // 5 holding registers (addresses 15..19) with first register LSB accessible as coils (addresses 15..22) with typed access
-  auto typedRegistersWithCoils = std::make_shared<PL::TypedBuffer<TypedRegisterWithCoilData>>();
-  server.AddMemoryArea (PL::ModbusMemoryType::holdingRegisters, 15, typedRegistersWithCoils);
-  server.AddMemoryArea (PL::ModbusMemoryType::coils, 15, typedRegistersWithCoils, 0, 1);
+  auto typedRegistersWithCoils = std::make_shared<PL::ModbusTypedMemoryArea<TypedRegisterWithCoilData>>(PL::ModbusMemoryType::holdingRegisters, 15);
+  server.AddMemoryArea (typedRegistersWithCoils);
+  server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::coils, 15, typedRegistersWithCoils->data, 1, typedRegistersWithCoils));
   // Example of data access in program
   if (1) {
     PL::LockGuard lg (*typedRegistersWithCoils);
@@ -93,11 +93,8 @@ extern "C" void app_main(void) {
   }
 
   // Dynamic input register (address 20) that contains the uptime value in seconds
-  std::shared_ptr<PL::ModbusMemoryArea> secondCounterInputRegister = std::make_shared<SecondCounterInputRegister>(20);
+  auto secondCounterInputRegister = std::make_shared<SecondCounterInputRegister>(20);
   server.AddMemoryArea (secondCounterInputRegister);
-
-  // Dynamic input register (address 21) that duplicates register 20
-  server.AddMemoryArea (PL::ModbusMemoryType::inputRegisters, 21, secondCounterInputRegister, 0, secondCounterInputRegister->size);
 
   server.Enable();
 

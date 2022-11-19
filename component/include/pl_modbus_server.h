@@ -49,33 +49,8 @@ public:
   /// @brief Add a Modbus memory area to the server
   /// @param memoryArea memory area
   /// @return error code
-  esp_err_t AddMemoryArea (std::shared_ptr<ModbusMemoryArea> memoryArea);
-
-  /// @brief Create a Modbus memory area from a buffer and add it to the server
-  /// @param type memory area type
-  /// @param address memory area address
-  /// @param buffer memory area buffer
-  /// @return error code
-  esp_err_t AddMemoryArea (ModbusMemoryType type, uint16_t address, std::shared_ptr<Buffer> buffer);
-
-  /// @brief Create a Modbus memory area from a buffer and add it to the server
-  /// @param type memory area type
-  /// @param address memory area address
-  /// @param buffer memory area buffer
-  /// @param offset memory area data offset relative to buffer data
-  /// @param size memory area data size (in bytes)
-  /// @return error code
-  esp_err_t AddMemoryArea (ModbusMemoryType type, uint16_t address, std::shared_ptr<Buffer> buffer, size_t offset, size_t size);
-
-  /// @brief Create a Modbus memory area from another memory area and add it to the server
-  /// @param type memory area type
-  /// @param address memory area address
-  /// @param baseMemoryArea base memory area
-  /// @param offset memory area data offset relative to base memory area data
-  /// @param size memory area data size (in bytes)
-  /// @return error code
-  esp_err_t AddMemoryArea (ModbusMemoryType type, uint16_t address, std::shared_ptr<ModbusMemoryArea> baseMemoryArea, size_t offset, size_t size);
-
+  void AddMemoryArea (std::shared_ptr<ModbusMemoryArea> memoryArea);
+  
   bool IsEnabled() override;
 
   /// @brief Get the Modbus station address

@@ -80,33 +80,10 @@ esp_err_t ModbusServer::Disable() {
 
 //==============================================================================
 
-esp_err_t ModbusServer::AddMemoryArea (std::shared_ptr<ModbusMemoryArea> memoryArea) {
+void ModbusServer::AddMemoryArea (std::shared_ptr<ModbusMemoryArea> memoryArea) {
   LockGuard lg (*this);
   memoryAreas.push_back (memoryArea);
-  return ESP_OK;
 }
-
-//==============================================================================
-
-esp_err_t ModbusServer::AddMemoryArea (ModbusMemoryType type, uint16_t address, std::shared_ptr<Buffer> buffer) {
-  return AddMemoryArea (type, address, buffer, 0, buffer->size);
-}
-
-//==============================================================================
-
-esp_err_t ModbusServer::AddMemoryArea (ModbusMemoryType type, uint16_t address, std::shared_ptr<Buffer> buffer, size_t offset, size_t size) {
-  ESP_RETURN_ON_FALSE (offset < buffer->size, ESP_ERR_INVALID_ARG, TAG, "invalid offset");
-  ESP_RETURN_ON_FALSE (size <= buffer->size - offset, ESP_ERR_INVALID_SIZE, TAG, "invalid size");
-  return AddMemoryArea (std::make_shared<ModbusMemoryArea> (type, address, (uint8_t*)buffer->data + offset, size, buffer));
-}
-
-//==============================================================================
-
-esp_err_t ModbusServer::AddMemoryArea (ModbusMemoryType type, uint16_t address, std::shared_ptr<ModbusMemoryArea> baseMemoryArea, size_t offset, size_t size) {
-  ESP_RETURN_ON_FALSE (offset < baseMemoryArea->size, ESP_ERR_INVALID_ARG, TAG, "invalid offset");
-  ESP_RETURN_ON_FALSE (size <= baseMemoryArea->size - offset, ESP_ERR_INVALID_SIZE, TAG, "invalid size");
-  return AddMemoryArea (std::make_shared<ModbusMemoryArea> (type, address, (uint8_t*)baseMemoryArea->data + offset, size, baseMemoryArea));
-}  
 
 //==============================================================================
 
