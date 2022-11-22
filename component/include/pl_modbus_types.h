@@ -16,13 +16,13 @@ enum class ModbusInterface {
 };
 
 /// @brief Modbus protocol
-enum class ModbusProtocol {
+enum class ModbusProtocol : uint8_t {
   /// @brief Modbus RTU
-  rtu,
+  rtu = 0,
   /// @brief Modbus ASCII
-  ascii,
+  ascii = 1,
   /// @brief Modbus TCP
-  tcp
+  tcp = 2
 };
 
 /// @brief Modbus memory type
