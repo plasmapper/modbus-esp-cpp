@@ -2,9 +2,9 @@
 
 //==============================================================================
 
-auto port = std::make_shared<PL::UartPort>(UART_NUM_0);
+auto uart = std::make_shared<PL::Uart>(UART_NUM_0);
 // Modbus server (port: UART0, protocol: RTU, address: 1)
-PL::ModbusServer server (port, PL::ModbusProtocol::rtu, 1);
+PL::ModbusServer server (uart, PL::ModbusProtocol::rtu, 1);
 
 #pragma pack(push, 1)
 struct TypedRegisterData {
@@ -45,13 +45,13 @@ private:
 //==============================================================================
 
 extern "C" void app_main(void) {
-  port->Initialize();
-  port->SetBaudRate (115200);
-  port->SetDataBits (8);
-  port->SetParity (PL::UartParity::even);
-  port->SetStopBits (PL::UartStopBits::one);
-  port->SetFlowControl (PL::UartFlowControl::none);
-  port->Enable();
+  uart->Initialize();
+  uart->SetBaudRate (115200);
+  uart->SetDataBits (8);
+  uart->SetParity (PL::UartParity::even);
+  uart->SetStopBits (PL::UartStopBits::one);
+  uart->SetFlowControl (PL::UartFlowControl::none);
+  uart->Enable();
   
   // 5 holding registers (addresses 0..4)
   auto holdingRegisters = std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::holdingRegisters, 0, 10);

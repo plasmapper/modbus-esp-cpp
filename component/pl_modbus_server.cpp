@@ -17,16 +17,16 @@ const std::string ModbusServer::defaultName = "Modbus Server";
 
 //==============================================================================
 
-ModbusServer::ModbusServer (std::shared_ptr<UartPort> port, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer) :
-    ModbusBase (protocol, buffer, defaultReadTimeout), interface (ModbusInterface::uart), uartServer (std::make_shared<UartServer>(port, *this)),
+ModbusServer::ModbusServer (std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer) :
+    ModbusBase (protocol, buffer, defaultReadTimeout), interface (ModbusInterface::uart), uartServer (std::make_shared<UartServer>(uart, *this)),
     stationAddress (stationAddress) {
   SetName (defaultName);
 }
 
 //==============================================================================
 
-ModbusServer::ModbusServer (std::shared_ptr<UartPort> port, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
-    ModbusBase (protocol, bufferSize, defaultReadTimeout), interface (ModbusInterface::uart), uartServer (std::make_shared<UartServer>(port, *this)),
+ModbusServer::ModbusServer (std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
+    ModbusBase (protocol, bufferSize, defaultReadTimeout), interface (ModbusInterface::uart), uartServer (std::make_shared<UartServer>(uart, *this)),
     stationAddress (stationAddress) {
   SetName (defaultName);
 }
@@ -425,12 +425,12 @@ esp_err_t ModbusServer::WriteExceptionFrame (Stream& stream, uint8_t stationAddr
 
 //==============================================================================
 
-ModbusServer::UartServer::UartServer (std::shared_ptr<UartPort> port, ModbusServer& modbusServer) : PL::UartServer (port), modbusServer (modbusServer) {}
+ModbusServer::UartServer::UartServer (std::shared_ptr<Uart> uart, ModbusServer& modbusServer) : PL::UartServer (uart), modbusServer (modbusServer) {}
 
 //==============================================================================
 
-esp_err_t ModbusServer::UartServer::HandleRequest (UartPort& port) {
-  return modbusServer.HandleRequest (port);
+esp_err_t ModbusServer::UartServer::HandleRequest (Uart& uart) {
+  return modbusServer.HandleRequest (uart);
 }
 
 //==============================================================================

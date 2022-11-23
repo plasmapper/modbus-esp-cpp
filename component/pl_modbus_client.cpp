@@ -11,8 +11,8 @@ namespace PL {
 
 //==============================================================================
 
-ModbusClient::ModbusClient (std::shared_ptr<UartPort> port, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
-    ModbusBase (protocol, bufferSize, defaultReadTimeout), interface (ModbusInterface::uart), uartPort (port),
+ModbusClient::ModbusClient (std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
+    ModbusBase (protocol, bufferSize, defaultReadTimeout), interface (ModbusInterface::uart), uart (uart),
     stationAddress (stationAddress) {}
 
 //==============================================================================
@@ -313,7 +313,7 @@ esp_err_t ModbusClient::Command (ModbusFunctionCode functionCode, size_t request
     ESP_RETURN_ON_ERROR (tcpClient->Connect(), TAG, "TCP client connect failed");
   }
   
-  Stream& stream = (interface == ModbusInterface::uart) ? (Stream&)*uartPort : (Stream&)*tcpClient->GetStream();
+  Stream& stream = (interface == ModbusInterface::uart) ? (Stream&)*uart : (Stream&)*tcpClient->GetStream();
   LockGuard lgStream (stream);
 
   Buffer& dataBuffer = GetDataBuffer();

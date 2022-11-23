@@ -222,7 +222,7 @@ esp_err_t ModbusBase::WriteFrame (Stream& stream, uint8_t stationAddress, Modbus
     *(uint16_t*)((uint8_t*)buffer->data + 2 + dataSize) = Crc (2 + dataSize);
 
     uint32_t msDelay = 2;
-    if (auto uart = dynamic_cast<UartPort*>(&stream)) {
+    if (auto uart = dynamic_cast<Uart*>(&stream)) {
       uint32_t baudrate = uart->GetBaudRate();
       if (baudrate > 0 && baudrate < 19200)
         msDelay = 28000 / baudrate + 1;

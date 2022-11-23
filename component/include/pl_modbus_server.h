@@ -21,14 +21,14 @@ public:
   /// @param protocol Modbus protocol
   /// @param stationAddress station address
   /// @param buffer transaction buffer
-  ModbusServer (std::shared_ptr<UartPort> port, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer);
+  ModbusServer (std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer);
 
   /// @brief Create an UART Modbus server and allocate transaction buffer
   /// @param port UART port
   /// @param protocol Modbus protocol
   /// @param stationAddress station address
   /// @param bufferSize transaction buffer size
-  ModbusServer (std::shared_ptr<UartPort> port, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize = defaultBufferSize);
+  ModbusServer (std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize = defaultBufferSize);
   
   /// @brief Create a network Modbus server with shared transaction buffer
   /// @param port network port
@@ -95,8 +95,8 @@ protected:
 private:
   class UartServer : public PL::UartServer {
   public:
-    UartServer (std::shared_ptr<UartPort> port, ModbusServer& modbusServer);
-    esp_err_t HandleRequest (UartPort& port) override;
+    UartServer (std::shared_ptr<Uart> uart, ModbusServer& modbusServer);
+    esp_err_t HandleRequest (Uart& uart) override;
   private:
     ModbusServer& modbusServer;
   };
