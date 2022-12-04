@@ -27,6 +27,7 @@ extern "C" void app_main(void) {
   wifi.Initialize();
   wifi.SetSsid (wifiSsid);
   wifi.SetPassword (wifiPassword);
+  wifi.EnableIpV4DhcpClient();
   wifi.gotIpV4AddressEvent.AddHandler (wiFiGotIpEventHandler, &WiFiGotIpEventHandler::OnGotIpV4Address);
   wifi.gotIpV6AddressEvent.AddHandler (wiFiGotIpEventHandler, &WiFiGotIpEventHandler::OnGotIpV6Address);
 

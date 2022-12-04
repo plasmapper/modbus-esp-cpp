@@ -2,7 +2,7 @@ version: "1.0.0"
 description: Modbus C++ class component for ESP-IDF
 url: https://github.com/plasmapper/modbus-esp-cpp
 dependencies:
-  idf: ">=4.4"
+  idf: "^5.0"
   pl_common:
     path: component
     git: https://github.com/plasmapper/common-esp-cpp.git

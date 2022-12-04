@@ -221,13 +221,13 @@ esp_err_t ModbusBase::WriteFrame (Stream& stream, uint8_t stationAddress, Modbus
     ((uint8_t*)buffer->data)[1] = (uint8_t)functionCode;
     *(uint16_t*)((uint8_t*)buffer->data + 2 + dataSize) = Crc (2 + dataSize);
 
-    uint32_t msDelay = 2;
+    /*uint32_t msDelay = 2;
     if (auto uart = dynamic_cast<Uart*>(&stream)) {
       uint32_t baudrate = uart->GetBaudRate();
       if (baudrate > 0 && baudrate < 19200)
         msDelay = 28000 / baudrate + 1;
     }
-    ets_delay_us (msDelay * 1000);
+    ets_delay_us (msDelay * 1000);*/
     ESP_RETURN_ON_ERROR (stream.Write (*buffer, 0, dataSize + 4), TAG, "stream write error");
     return ESP_OK;
   }
