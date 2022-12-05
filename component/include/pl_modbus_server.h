@@ -109,7 +109,6 @@ private:
     ModbusServer& modbusServer;
   };
 
-  Mutex mutex;
   ModbusInterface interface;
   std::shared_ptr<UartServer> uartServer;
   std::shared_ptr<TcpServer> tcpServer;

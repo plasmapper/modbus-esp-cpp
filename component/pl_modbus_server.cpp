@@ -50,20 +50,13 @@ ModbusServer::ModbusServer (uint16_t port, size_t bufferSize) :
 //==============================================================================
 
 esp_err_t ModbusServer::Lock (TickType_t timeout) {
-  esp_err_t error = mutex.Lock (timeout);
-  if (error == ESP_OK)
-    return ESP_OK;
-  if (error == ESP_ERR_TIMEOUT && timeout == 0)
-    return ESP_ERR_TIMEOUT;
-  ESP_RETURN_ON_ERROR (error, TAG, "mutex lock failed");
-  return ESP_OK;
+  return interface == ModbusInterface::uart ? uartServer->Lock (timeout) : tcpServer->Lock (timeout);
 }
 
 //==============================================================================
 
 esp_err_t ModbusServer::Unlock() {
-  ESP_RETURN_ON_ERROR (mutex.Unlock(), TAG, "mutex unlock failed");
-  return ESP_OK;
+  return interface == ModbusInterface::uart ? uartServer->Unlock() : tcpServer->Unlock();
 }
 
 //==============================================================================
@@ -109,10 +102,7 @@ esp_err_t ModbusServer::SetStationAddress (uint8_t stationAddress) {
 //==============================================================================
 
 esp_err_t ModbusServer::SetTaskParameters (const TaskParameters& taskParameters) {
-  if (interface == ModbusInterface::uart)
-    return uartServer->SetTaskParameters (taskParameters);
-  else
-    return tcpServer->SetTaskParameters (taskParameters);
+  return interface == ModbusInterface::uart ? uartServer->SetTaskParameters (taskParameters) : tcpServer->SetTaskParameters (taskParameters);
 }
 
 //==============================================================================
