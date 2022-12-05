@@ -36,7 +36,7 @@ struct TypedRegisterWithCoilData {
 class SecondCounterInputRegister : public PL::ModbusMemoryArea {
 public:
   SecondCounterInputRegister (uint16_t address);
-  void OnRead() override;
+  esp_err_t OnRead() override;
 
 private:
   uint16_t data;
@@ -110,6 +110,7 @@ SecondCounterInputRegister::SecondCounterInputRegister (uint16_t address) :
 
 //==============================================================================
 
-void SecondCounterInputRegister::OnRead() {
+esp_err_t SecondCounterInputRegister::OnRead() {
   data = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000;
+  return ESP_OK;
 }

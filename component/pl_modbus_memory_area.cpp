@@ -24,6 +24,18 @@ ModbusMemoryArea::ModbusMemoryArea (ModbusMemoryType type, uint16_t address, voi
 
 //==============================================================================
 
+esp_err_t ModbusMemoryArea::OnRead() {
+  return ESP_OK;
+}
+
+//==============================================================================
+
+esp_err_t ModbusMemoryArea::OnWrite() {
+  return ESP_OK;
+}
+
+//==============================================================================
+
 size_t ModbusMemoryArea::GetNumberOfItems() {
   if (type == ModbusMemoryType::coils || type == ModbusMemoryType::discreteInputs)
     return std::min (size * 8, (size_t)(0xFFFF - address) + 1);

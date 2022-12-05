@@ -94,6 +94,7 @@ extern "C" void app_main(void) {
   server.AddMemoryArea (serverHR);
   server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::inputRegisters, 0, serverHR->data, serverHR->size, serverHR));
   TEST_ASSERT (server.Enable() == ESP_OK);
+  vTaskDelay (10);
   TEST_ASSERT (server.IsEnabled());
 
   for (int i = 0; i < protocols.size(); i++) {

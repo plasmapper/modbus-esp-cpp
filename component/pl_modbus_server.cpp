@@ -204,7 +204,10 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
     ModbusMemoryType memoryType = (functionCode == ModbusFunctionCode::readCoils)?(ModbusMemoryType::coils):(ModbusMemoryType::discreteInputs);
     if (auto memoryArea = FindMemoryArea (memoryType, memoryAddress, numberOfMemoryItems)) {
       LockGuard lg (*memoryArea);
-      memoryArea->OnRead();
+      if (memoryArea->OnRead() != ESP_OK) {
+        ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
+        return ESP_OK;
+      }
 
       uint8_t* memoryData = (uint8_t*)memoryArea->data + (memoryAddress - memoryArea->address) / 8;
       uint_fast8_t memoryBitOffset = (memoryAddress - memoryArea->address) % 8;
@@ -247,7 +250,10 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
     ModbusMemoryType memoryType = (functionCode == ModbusFunctionCode::readHoldingRegisters)?(ModbusMemoryType::holdingRegisters):(ModbusMemoryType::inputRegisters);
     if (auto memoryArea = FindMemoryArea (memoryType, memoryAddress, numberOfMemoryItems)) {
       LockGuard lg (*memoryArea);
-      memoryArea->OnRead();
+      if (memoryArea->OnRead() != ESP_OK) {
+        ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
+        return ESP_OK;
+      }
 
       uint16_t* memoryData = (uint16_t*)memoryArea->data + (memoryAddress - memoryArea->address);
       ((uint8_t*)dataBuffer.data)[0] = numberOfMemoryItems * 2;
@@ -281,7 +287,10 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
     ModbusMemoryType memoryType = (functionCode == ModbusFunctionCode::writeSingleCoil)?(ModbusMemoryType::coils):(ModbusMemoryType::holdingRegisters);
     if (auto memoryArea = FindMemoryArea (memoryType, memoryAddress, 1)) {
       LockGuard lg (*memoryArea);
-      memoryArea->OnRead();
+      if (memoryArea->OnRead() != ESP_OK) {
+        ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
+        return ESP_OK;
+      }
 
       if (memoryType == ModbusMemoryType::coils) {
         void* memoryData = (uint8_t*)memoryArea->data + (memoryAddress - memoryArea->address) / 8;
@@ -294,9 +303,10 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
       else
         *((uint16_t*)memoryArea->data + (memoryAddress - memoryArea->address)) = memoryValue;
     
-      esp_err_t error = stationAddress == 0 ? ESP_OK : WriteFrame (stream, stationAddress, functionCode, 4, transactionId);
-      memoryArea->OnWrite();
-      ESP_RETURN_ON_ERROR (error, TAG, "write frame failed");
+      if (memoryArea->OnWrite() == ESP_OK)
+        ESP_RETURN_ON_ERROR (stationAddress == 0 ? ESP_OK : WriteFrame (stream, stationAddress, functionCode, 4, transactionId), TAG, "write frame failed");
+      else
+        ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
     }
     else {
@@ -332,7 +342,10 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
     ModbusMemoryType memoryType = ModbusMemoryType::coils;
     if (auto memoryArea = FindMemoryArea (memoryType, memoryAddress, numberOfMemoryItems)) {
       LockGuard lg (*memoryArea);
-      memoryArea->OnRead();
+      if (memoryArea->OnRead() != ESP_OK) {
+        ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
+        return ESP_OK;
+      }
 
       uint8_t* memoryData = (uint8_t*)memoryArea->data + (memoryAddress - memoryArea->address) / 8;
       uint_fast8_t memoryBitOffset = (memoryAddress - memoryArea->address) % 8;
@@ -350,9 +363,10 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
         memoryData[i] = memoryValue;
       }
 
-      esp_err_t error = stationAddress == 0 ? ESP_OK : WriteFrame (stream, stationAddress, functionCode, 4, transactionId);
-      memoryArea->OnWrite();
-      ESP_RETURN_ON_ERROR (error, TAG, "write frame failed");
+      if (memoryArea->OnWrite() == ESP_OK)
+        ESP_RETURN_ON_ERROR (stationAddress == 0 ? ESP_OK : WriteFrame (stream, stationAddress, functionCode, 4, transactionId), TAG, "write frame failed");
+      else
+        ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
     }
     else {
@@ -388,15 +402,19 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
     ModbusMemoryType memoryType = ModbusMemoryType::holdingRegisters;
     if (auto memoryArea = FindMemoryArea (memoryType, memoryAddress, numberOfMemoryItems)) {
       LockGuard lg (*memoryArea);
-      memoryArea->OnRead();
+      if (memoryArea->OnRead() != ESP_OK) {
+        ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
+        return ESP_OK;
+      }
 
       uint16_t* memoryData = (uint16_t*)memoryArea->data + (memoryAddress - memoryArea->address);
       for (uint_fast16_t i = 0; i < numberOfMemoryItems; i++)
           memoryData[i] = __builtin_bswap16 (((uint16_t*)((uint8_t*)dataBuffer.data + 5))[i]);
 
-      esp_err_t error = stationAddress == 0 ? ESP_OK : WriteFrame (stream, stationAddress, functionCode, 4, transactionId);
-      memoryArea->OnWrite();
-      ESP_RETURN_ON_ERROR (error, TAG, "write frame failed");
+      if (memoryArea->OnWrite() == ESP_OK)
+        ESP_RETURN_ON_ERROR (stationAddress == 0 ? ESP_OK : WriteFrame (stream, stationAddress, functionCode, 4, transactionId), TAG, "write frame failed");
+      else
+        ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
     }
     else {

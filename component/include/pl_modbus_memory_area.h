@@ -40,9 +40,9 @@ public:
   ModbusMemoryArea (ModbusMemoryType type, uint16_t address, void* data, size_t size, std::shared_ptr<Lockable> lockable);
   
   /// @brief Callback method that is called when memory area is about to be read
-  virtual void OnRead() {}
+  virtual esp_err_t OnRead();
   /// @brief Callback method that is called when memory area has just been written
-  virtual void OnWrite() {}
+  virtual esp_err_t OnWrite();
 
 private:
   size_t GetNumberOfItems();
