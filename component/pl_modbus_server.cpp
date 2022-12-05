@@ -464,7 +464,6 @@ esp_err_t ModbusServer::TcpServer::HandleRequest (NetworkStream& stream) {
 //==============================================================================
 
 esp_err_t ModbusServer::HandleRequest (Stream& stream) {
-  LockGuard lgServer (*this);
   uint8_t stationAddress;
   ModbusFunctionCode functionCode;
   Buffer& dataBuffer = GetDataBuffer();
