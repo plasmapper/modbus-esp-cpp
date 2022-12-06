@@ -80,6 +80,12 @@ void ModbusServer::AddMemoryArea (std::shared_ptr<ModbusMemoryArea> memoryArea) 
 
 //==============================================================================
 
+void ModbusServer::AddMemoryArea (ModbusMemoryType type, uint16_t address, std::shared_ptr<Buffer> buffer) {
+  AddMemoryArea (std::make_shared<ModbusMemoryArea> (type, address, buffer->data, buffer->size, buffer));
+}
+
+//==============================================================================
+
 bool ModbusServer::IsEnabled() {
   return interface == ModbusInterface::uart ? uartServer->IsEnabled() : tcpServer->IsEnabled();
 }

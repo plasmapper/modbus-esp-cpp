@@ -50,6 +50,12 @@ public:
   /// @param memoryArea memory area
   /// @return error code
   void AddMemoryArea (std::shared_ptr<ModbusMemoryArea> memoryArea);
+
+  /// @brief Add buffer as a Modbus memory area to the server
+  /// @param type memory area type
+  /// @param address memory area address
+  /// @param buffer buffer
+  void AddMemoryArea (ModbusMemoryType type, uint16_t address, std::shared_ptr<Buffer> buffer);
   
   bool IsEnabled() override;
 

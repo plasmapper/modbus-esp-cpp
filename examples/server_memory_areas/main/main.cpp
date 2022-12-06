@@ -72,9 +72,9 @@ extern "C" void app_main(void) {
   }
 
   // 5 holding and 5 input registers (addresses 10..14) mapped to the same memory area with typed access
-  auto typedCombinedRegisters = std::make_shared<PL::ModbusTypedMemoryArea<TypedRegisterData>>(PL::ModbusMemoryType::holdingRegisters, 10);
-  server.AddMemoryArea (typedCombinedRegisters);
-  server.AddMemoryArea (std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::inputRegisters, 10, typedCombinedRegisters->data, typedCombinedRegisters->size, typedCombinedRegisters));
+  auto typedCombinedRegisters = std::make_shared<PL::TypedBuffer<TypedRegisterData>>();
+  server.AddMemoryArea (PL::ModbusMemoryType::holdingRegisters, 10, typedCombinedRegisters);
+  server.AddMemoryArea (PL::ModbusMemoryType::inputRegisters, 10, typedCombinedRegisters);
   // Example of data access in program
   if (1) {
     PL::LockGuard lg (*typedCombinedRegisters);
