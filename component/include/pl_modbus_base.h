@@ -36,7 +36,7 @@ public:
   /// @brief Set Modbus protocol
   /// @param protocol protocol
   /// @return error code
-  esp_err_t SetProtocol (ModbusProtocol protocol);
+  virtual esp_err_t SetProtocol (ModbusProtocol protocol);
 
   /// @brief Get the read operation timeout 
   /// @return timeout in FreeRTOS ticks
