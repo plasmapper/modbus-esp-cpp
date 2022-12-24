@@ -468,6 +468,9 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream) {
   LockGuard lgBuffer (dataBuffer);
 
   esp_err_t error = ReadFrame (stream, stationAddress, functionCode, dataSize, transactionId);
+  while (GetProtocol() != ModbusProtocol::tcp && stream.GetReadableSize())
+    error = ReadFrame (stream, stationAddress, functionCode, dataSize, transactionId);
+
   if ((error == ESP_OK || error == ESP_ERR_INVALID_SIZE) && stationAddress != this->stationAddress && stationAddress != 0)
     return ESP_OK;
 
