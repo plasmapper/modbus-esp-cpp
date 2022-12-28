@@ -274,8 +274,6 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
     uint_fast16_t memoryAddress = __builtin_bswap16 (((uint16_t*)dataBuffer.data)[0]);
     uint_fast16_t memoryValue = __builtin_bswap16 (((uint16_t*)dataBuffer.data)[1]);
     if ((functionCode == ModbusFunctionCode::writeSingleCoil && memoryValue != 0 && memoryValue != 0xFF00) || dataBuffer.size < 4) {
-      if (stationAddress == 0)
-        return ESP_OK;
       ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
     }
@@ -306,8 +304,6 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
       return ESP_OK;
     }
     else {
-      if (stationAddress == 0)
-        return ESP_OK;
       ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::illegalDataAddress, transactionId), TAG, "write frame failed");
       return ESP_OK;
     }
@@ -323,14 +319,10 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
     uint_fast16_t numberOfMemoryItems = __builtin_bswap16 (((uint16_t*)dataBuffer.data)[1]);
     uint_fast8_t memorySize = ((uint8_t*)dataBuffer.data)[4];
     if (numberOfMemoryItems == 0 || numberOfMemoryItems > maxNumberOfModbusBitsToWrite || dataSize != memorySize + 5 || memorySize != (numberOfMemoryItems - 1) / 8 + 1) {
-      if (stationAddress == 0)
-        return ESP_OK;
       ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
     }
     if (memoryAddress > 0xFFFF - numberOfMemoryItems + 1) {
-      if (stationAddress == 0)
-        return ESP_OK;
       ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::illegalDataAddress, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
     }
@@ -366,8 +358,6 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
       return ESP_OK;
     }
     else {
-      if (stationAddress == 0)
-        return ESP_OK;
       ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::illegalDataAddress, transactionId), TAG, "write frame failed");
       return ESP_OK;
     }
@@ -383,14 +373,10 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
     uint_fast16_t numberOfMemoryItems = __builtin_bswap16 (((uint16_t*)dataBuffer.data)[1]);
     uint_fast8_t memorySize = ((uint8_t*)dataBuffer.data)[4];
     if (numberOfMemoryItems == 0 || numberOfMemoryItems > maxNumberOfModbusRegistersToWrite || dataSize != memorySize + 5 || memorySize != numberOfMemoryItems * 2) {
-      if (stationAddress == 0)
-        return ESP_OK;
       ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
     }
     if (memoryAddress > 0xFFFF - numberOfMemoryItems + 1) {
-      if (stationAddress == 0)
-        return ESP_OK;
       ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::illegalDataAddress, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
     }
@@ -414,15 +400,11 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
       return ESP_OK;
     }
     else {
-      if (stationAddress == 0)
-        return ESP_OK;
       ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::illegalDataAddress, transactionId), TAG, "write frame failed");
       return ESP_OK;
     }
   }
 
-  if (stationAddress == 0)
-    return ESP_OK;
   ESP_RETURN_ON_ERROR (WriteExceptionFrame (stream, stationAddress, functionCode, ModbusException::illegalFunction, transactionId), TAG, "write exception frame failed");
   return ESP_OK;
 }
@@ -430,6 +412,9 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream, uint8_t stationAddress, M
 //==============================================================================
 
 esp_err_t ModbusServer::WriteExceptionFrame (Stream& stream, uint8_t stationAddress, ModbusFunctionCode functionCode, ModbusException exception, uint16_t transactionId) {
+  if (stationAddress == 0)
+    return ESP_OK;
+    
   Buffer& dataBuffer = GetDataBuffer();
   ESP_RETURN_ON_FALSE (dataBuffer.size >= 1, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
   ((uint8_t*)dataBuffer.data)[0] = (uint8_t)exception;
@@ -467,9 +452,10 @@ esp_err_t ModbusServer::HandleRequest (Stream& stream) {
   uint16_t transactionId;
   LockGuard lgBuffer (dataBuffer);
 
-  esp_err_t error = ReadFrame (stream, stationAddress, functionCode, dataSize, transactionId);
-  while (GetProtocol() != ModbusProtocol::tcp && stream.GetReadableSize())
+  esp_err_t error;
+  do {
     error = ReadFrame (stream, stationAddress, functionCode, dataSize, transactionId);
+  } while (stream.GetReadableSize() && GetProtocol() != ModbusProtocol::tcp);
 
   if ((error == ESP_OK || error == ESP_ERR_INVALID_SIZE) && stationAddress != this->stationAddress && stationAddress != 0)
     return ESP_OK;

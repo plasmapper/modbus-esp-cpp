@@ -215,6 +215,9 @@ esp_err_t ModbusBase::ReadFrame (Stream& stream, uint8_t& stationAddress, Modbus
 //==============================================================================
 
 esp_err_t ModbusBase::WriteFrame (Stream& stream, uint8_t stationAddress, ModbusFunctionCode functionCode, size_t dataSize, uint16_t transactionId) {
+  if (protocol != ModbusProtocol::tcp && stream.GetReadableSize())
+    return ESP_ERR_INVALID_STATE;
+
   if (protocol == ModbusProtocol::rtu) {
     ESP_RETURN_ON_FALSE (buffer->size >= dataSize + 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
     ((uint8_t*)buffer->data)[0] = stationAddress;
