@@ -179,8 +179,7 @@ esp_err_t ModbusBase::ReadFrame (Stream& stream, uint8_t& stationAddress, Modbus
     
     ESP_RETURN_ON_ERROR (stream.Read (&protocolId, 2), TAG, "read protocol ID failed");
     if (protocolId != 0) {
-      stream.SetReadTimeout (2);
-      stream.Read (NULL, SIZE_MAX);
+      stream.FlushReadBuffer (2);
       vTaskDelay (delayAfterRead);
       ESP_RETURN_ON_ERROR (ESP_ERR_INVALID_RESPONSE, TAG, "invalid protocol id");
     }
@@ -243,7 +242,7 @@ esp_err_t ModbusBase::WriteFrame (Stream& stream, uint8_t stationAddress, Modbus
     for (int i = dataSize + 2; i >= 0; i--) {
       uint8_t byteData = ((uint8_t*)buffer->data)[i] >> 4;
       ((uint8_t*)buffer->data)[i * 2 + 1] = (byteData > 9)?(byteData - 10 + 'A'):(byteData + '0');
-      byteData = ((uint8_t*)buffer->data)[i]  & 0x0F;
+      byteData = ((uint8_t*)buffer->data)[i] & 0x0F;
       ((uint8_t*)buffer->data)[i * 2 + 2] = (byteData > 9)?(byteData - 10 + 'A'):(byteData + '0');
     }
     ((uint8_t*)buffer->data)[0] = ':';

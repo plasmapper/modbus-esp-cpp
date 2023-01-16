@@ -167,8 +167,7 @@ esp_err_t ModbusServer::ReadRtuData (Stream& stream, ModbusFunctionCode function
       }
 
     default:
-      stream.SetReadTimeout (2);
-      stream.Read (NULL, SIZE_MAX);
+      stream.FlushReadBuffer (2);
       ESP_RETURN_ON_ERROR (ESP_ERR_NOT_SUPPORTED, TAG, "function code (%d) is not supported", (int)functionCode);
       return ESP_OK;
   }
