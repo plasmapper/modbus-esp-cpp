@@ -3,7 +3,7 @@ Modbus Component
 
 .. |COMPONENT| replace:: modbus
 
-.. |VERSION| replace:: 1.0.0
+.. |VERSION| replace:: 1.0.1
 
 .. include:: ../../../installation.rst
 
@@ -43,12 +43,12 @@ Features
 
 Examples
 --------
-| `UART client <https://github.com/plasmapper/modbus-esp-cpp/tree/main/examples/uart_client>`_
-| `Network client <https://github.com/plasmapper/modbus-esp-cpp/tree/main/examples/network_client>`_
-| `UART server <https://github.com/plasmapper/modbus-esp-cpp/tree/main/examples/uart_server>`_
-| `Network server <https://github.com/plasmapper/modbus-esp-cpp/tree/main/examples/network_server>`_
-| `Server memory areas <https://github.com/plasmapper/modbus-esp-cpp/tree/main/examples/server_memory_areas>`_
-| `Server user-defined function <https://github.com/plasmapper/modbus-esp-cpp/tree/main/examples/server_user_defined_function>`_
+| `UART client <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.0.1/examples/uart_client>`_
+| `Network client <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.0.1/examples/network_client>`_
+| `UART server <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.0.1/examples/uart_server>`_
+| `Network server <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.0.1/examples/network_server>`_
+| `Server memory areas <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.0.1/examples/server_memory_areas>`_
+| `Server user-defined function <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.0.1/examples/server_user_defined_function>`_
 
 API reference
 -------------

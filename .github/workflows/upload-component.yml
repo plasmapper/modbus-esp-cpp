@@ -17,6 +17,7 @@ jobs:
           cp ./LICENSE ./component/LICENSE
           cp ./README.md ./component/README.md
           cp ./CHANGELOG.md ./component/CHANGELOG.md
+          cp -r ./examples ./component/examples
 
       - name: Rename component directory
         run: 
