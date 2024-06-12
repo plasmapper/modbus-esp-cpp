@@ -1,0 +1,30 @@
+name: Upload component
+on:
+  workflow_dispatch:
+
+env:
+  COMPONENT_NAME: pl_modbus
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy supplementary files
+        run: |
+          cp ./LICENSE ./component/LICENSE
+          cp ./README.md ./component/README.md
+          cp ./CHANGELOG.md ./component/CHANGELOG.md
+
+      - name: Rename component directory
+        run: 
+          mv ./component ./$COMPONENT_NAME
+
+      - name: Upload
+        uses: espressif/upload-components-ci-action@v1
+        with:
+          directories: ${{env.COMPONENT_NAME}}
+          namespace: "plasmapper"
+          api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}

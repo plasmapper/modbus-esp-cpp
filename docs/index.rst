@@ -3,6 +3,8 @@ Modbus Component
 
 .. |COMPONENT| replace:: modbus
 
+.. |VERSION| replace:: 1.0.0
+
 .. include:: ../../../installation.rst
 
 .. include:: ../../../sdkconfig_network.rst

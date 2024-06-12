@@ -1,0 +1,2 @@
+dependencies:
+  plasmapper/pl_modbus: "^1.0.0"
