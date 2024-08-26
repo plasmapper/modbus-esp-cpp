@@ -18,26 +18,26 @@ public:
   /// @brief Number of memory area items (bits or 16-bit registers)
   const size_t numberOfItems;
 
-  /// @brief Create a Modbus memory area and allocate memory 
+  /// @brief Creates a Modbus memory area and allocates memory 
   /// @param type memory area type
   /// @param address memory area address
   /// @param size memory area data size (in bytes)
-  ModbusMemoryArea (ModbusMemoryType type, uint16_t address, size_t size);
+  ModbusMemoryArea(ModbusMemoryType type, uint16_t address, size_t size);
 
-  /// @brief Create a Modbus memory area from preallocated memory 
+  /// @brief Creates a Modbus memory area from preallocated memory 
   /// @param type memory area type
   /// @param address memory area address
   /// @param data memory area data pointer
   /// @param size memory area data size (in bytes)
-  ModbusMemoryArea (ModbusMemoryType type, uint16_t address, void* data, size_t size);
+  ModbusMemoryArea(ModbusMemoryType type, uint16_t address, void* data, size_t size);
 
-  /// @brief Create a Modbus memory area from preallocated memory with shared lockable
+  /// @brief Creates a Modbus memory area from preallocated memory with shared lockable
   /// @param type memory area type
   /// @param address memory area address
   /// @param data memory area data pointer
   /// @param size memory area data size (in bytes)
   /// @param lockable lockable object that is locked when this memory area is locked
-  ModbusMemoryArea (ModbusMemoryType type, uint16_t address, void* data, size_t size, std::shared_ptr<Lockable> lockable);
+  ModbusMemoryArea(ModbusMemoryType type, uint16_t address, void* data, size_t size, std::shared_ptr<Lockable> lockable);
   
   /// @brief Callback method that is called when memory area is about to be read
   virtual esp_err_t OnRead();
