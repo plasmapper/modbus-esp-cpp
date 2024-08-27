@@ -382,7 +382,7 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
     
     ModbusMemoryType memoryType = ModbusMemoryType::holdingRegisters;
     if (auto memoryArea = FindMemoryArea(memoryType, memoryAddress, numberOfMemoryItems)) {
-      LockGuard lg (*memoryArea);
+      LockGuard lg(*memoryArea);
       if (memoryArea->OnRead() != ESP_OK) {
         ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
         return ESP_OK;
@@ -446,10 +446,8 @@ esp_err_t ModbusServer::TcpServer::HandleRequest(NetworkStream& stream) {
 esp_err_t ModbusServer::HandleRequest(Stream& stream) {
   uint8_t stationAddress;
   ModbusFunctionCode functionCode;
-  Buffer& dataBuffer = GetDataBuffer();
   size_t dataSize;
   uint16_t transactionId;
-  LockGuard lgBuffer(dataBuffer);
 
   esp_err_t error;
   do {

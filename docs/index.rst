@@ -43,6 +43,18 @@ Features
      * Inherit :cpp:class:`PL::ModbusServer` class and override :cpp:func:`PL::ModbusServer::ReadRtuData` method to read custom function request data. 
      * Override :cpp:func:`PL::ModbusServer::HandleRequest` method to handle the client request with a custom function code.
 
+Thread safety
+-------------
+
+Class method thread safety is implemented by having the :cpp:class:`PL::Lockable` as a base class and creating the class object lock guard at the beginning of the methods.
+
+The UART :cpp:class:`PL::ModbusClient` locks both the :cpp:class:`PL::ModbusClient` and the :cpp:class:`PL::Uart` objects for the duration of the transaction.
+The network :cpp:class:`PL::ModbusClient` locks both the :cpp:class:`PL::ModbusClient` and the :cpp:class:`PL::TcpClient` objects for the duration of the transaction.
+
+The UART :cpp:class:`PL::ModbusServer` task method locks both the underlying :cpp:class:`PL::UartServer` and the :cpp:class:`PL::Uart` objects for the duration of the transaction.
+The network :cpp:class:`PL::ModbusServer` task method locks both the underlying :cpp:class:`PL::TcpServer` and the client :cpp:class:`PL::NetworkStream` objects for the duration of the transaction.
+The default :cpp:func:`PL::ModbusServer::HandleRequest` locks the accessed :cpp:class:`PL::ModbusMemoryArea` for the duration of the transaction.
+
 Examples
 --------
 | `UART client <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.0.1/examples/uart_client>`_
