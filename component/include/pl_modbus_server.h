@@ -16,19 +16,19 @@ public:
   /// @brief Default read operation timeout in FreeRTOS ticks
   static const TickType_t defaultReadTimeout = 2;
 
-  /// @brief Creates an UART Modbus server with shared transaction buffer
-  /// @param port UART port
+  /// @brief Creates a stream Modbus server with shared transaction buffer
+  /// @param stream stream
   /// @param protocol Modbus protocol
   /// @param stationAddress station address
   /// @param buffer transaction buffer
-  ModbusServer(std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer);
+  ModbusServer(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer);
 
-  /// @brief Creates an UART Modbus server and allocates transaction buffer
-  /// @param port UART port
+  /// @brief Creates an stream Modbus server and allocates transaction buffer
+  /// @param stream stream
   /// @param protocol Modbus protocol
   /// @param stationAddress station address
   /// @param bufferSize transaction buffer size
-  ModbusServer(std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize = defaultBufferSize);
+  ModbusServer(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize = defaultBufferSize);
   
   /// @brief Creates a network Modbus server with shared transaction buffer
   /// @param port network port
@@ -73,7 +73,7 @@ public:
   /// @return error code
   esp_err_t SetTaskParameters(const TaskParameters& taskParameters);
 
-  /// @brief Gets the base server (UartServer or TcpServer)
+  /// @brief Gets the base server (StreamServer or TcpServer)
   /// @return base server
   std::weak_ptr<Server> GetBaseServer();
 
@@ -99,10 +99,10 @@ protected:
   esp_err_t WriteExceptionFrame(Stream& stream, uint8_t stationAddress, ModbusFunctionCode functionCode, ModbusException exception, uint16_t transactionId);
 
 private:
-  class UartServer : public PL::UartServer {
+  class StreamServer : public PL::StreamServer {
   public:
-    UartServer(std::shared_ptr<Uart> uart, ModbusServer& modbusServer);
-    esp_err_t HandleRequest(Uart& uart) override;
+    StreamServer(std::shared_ptr<Stream> stream, ModbusServer& modbusServer);
+    esp_err_t HandleRequest(Stream& stream) override;
   private:
     ModbusServer& modbusServer;
   };
@@ -116,7 +116,7 @@ private:
   };
 
   ModbusInterface interface;
-  std::shared_ptr<UartServer> uartServer;
+  std::shared_ptr<StreamServer> streamServer;
   std::shared_ptr<TcpServer> tcpServer;
   uint8_t stationAddress;
   std::vector<std::shared_ptr<ModbusMemoryArea>> memoryAreas;

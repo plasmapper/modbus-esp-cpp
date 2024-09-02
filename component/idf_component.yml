@@ -1,9 +1,8 @@
-version: "1.1.0"
+version: "1.2.0"
 license: "MIT"
 description: Modbus C++ class component for ESP-IDF
 url: https://github.com/plasmapper/modbus-esp-cpp
 dependencies:
   idf: "^5.3"
-  plasmapper/pl_common: "^1.1.0"
-  plasmapper/pl_uart: "^1.0.1"
+  plasmapper/pl_common: "^1.2.1"
   plasmapper/pl_network: "^1.1.0"

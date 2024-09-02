@@ -17,16 +17,16 @@ const std::string ModbusServer::defaultName = "Modbus Server";
 
 //==============================================================================
 
-ModbusServer::ModbusServer(std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer) :
-    ModbusBase(protocol, buffer, defaultReadTimeout), interface(ModbusInterface::uart), uartServer(std::make_shared<UartServer>(uart, *this)),
+ModbusServer::ModbusServer(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer) :
+    ModbusBase(protocol, buffer, defaultReadTimeout), interface(ModbusInterface::stream), streamServer(std::make_shared<StreamServer>(stream, *this)),
     stationAddress(stationAddress) {
   SetName(defaultName);
 }
 
 //==============================================================================
 
-ModbusServer::ModbusServer(std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
-    ModbusBase(protocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::uart), uartServer(std::make_shared<UartServer>(uart, *this)),
+ModbusServer::ModbusServer(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
+    ModbusBase(protocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::stream), streamServer(std::make_shared<StreamServer>(stream, *this)),
     stationAddress(stationAddress) {
   SetName(defaultName);
 }
@@ -50,25 +50,25 @@ ModbusServer::ModbusServer(uint16_t port, size_t bufferSize) :
 //==============================================================================
 
 esp_err_t ModbusServer::Lock(TickType_t timeout) {
-  return interface == ModbusInterface::uart ? uartServer->Lock(timeout) : tcpServer->Lock(timeout);
+  return interface == ModbusInterface::stream ? streamServer->Lock(timeout) : tcpServer->Lock(timeout);
 }
 
 //==============================================================================
 
 esp_err_t ModbusServer::Unlock() {
-  return interface == ModbusInterface::uart ? uartServer->Unlock() : tcpServer->Unlock();
+  return interface == ModbusInterface::stream ? streamServer->Unlock() : tcpServer->Unlock();
 }
 
 //==============================================================================
 
 esp_err_t ModbusServer::Enable() {
-  return interface == ModbusInterface::uart ? uartServer->Enable() : tcpServer->Enable();
+  return interface == ModbusInterface::stream ? streamServer->Enable() : tcpServer->Enable();
 }
 
 //==============================================================================
 
 esp_err_t ModbusServer::Disable() {
-  return interface == ModbusInterface::uart ? uartServer->Disable() : tcpServer->Disable();
+  return interface == ModbusInterface::stream ? streamServer->Disable() : tcpServer->Disable();
 }
 
 //==============================================================================
@@ -87,7 +87,7 @@ void ModbusServer::AddMemoryArea(ModbusMemoryType type, uint16_t address, std::s
 //==============================================================================
 
 bool ModbusServer::IsEnabled() {
-  return interface == ModbusInterface::uart ? uartServer->IsEnabled() : tcpServer->IsEnabled();
+  return interface == ModbusInterface::stream ? streamServer->IsEnabled() : tcpServer->IsEnabled();
 }
 
 //==============================================================================
@@ -108,14 +108,14 @@ esp_err_t ModbusServer::SetStationAddress(uint8_t stationAddress) {
 //==============================================================================
 
 esp_err_t ModbusServer::SetTaskParameters(const TaskParameters& taskParameters) {
-  return interface == ModbusInterface::uart ? uartServer->SetTaskParameters(taskParameters) : tcpServer->SetTaskParameters(taskParameters);
+  return interface == ModbusInterface::stream ? streamServer->SetTaskParameters(taskParameters) : tcpServer->SetTaskParameters(taskParameters);
 }
 
 //==============================================================================
 
 std::weak_ptr<Server> ModbusServer::GetBaseServer() {
-  if (interface == ModbusInterface::uart)
-    return uartServer;
+  if (interface == ModbusInterface::stream)
+    return streamServer;
   else
     return tcpServer;
 }
@@ -423,12 +423,12 @@ esp_err_t ModbusServer::WriteExceptionFrame(Stream& stream, uint8_t stationAddre
 
 //==============================================================================
 
-ModbusServer::UartServer::UartServer(std::shared_ptr<Uart> uart, ModbusServer& modbusServer) : PL::UartServer(uart), modbusServer(modbusServer) {}
+ModbusServer::StreamServer::StreamServer(std::shared_ptr<Stream> stream, ModbusServer& modbusServer) : PL::StreamServer(stream), modbusServer(modbusServer) {}
 
 //==============================================================================
 
-esp_err_t ModbusServer::UartServer::HandleRequest(Uart& uart) {
-  return modbusServer.HandleRequest(uart);
+esp_err_t ModbusServer::StreamServer::HandleRequest(Stream& stream) {
+  return modbusServer.HandleRequest(stream);
 }
 
 //==============================================================================

@@ -13,12 +13,12 @@ public:
   /// @brief Default read operation timeout in FreeRTOS ticks
   static const TickType_t defaultReadTimeout = 300 / portTICK_PERIOD_MS;
 
-  /// @brief Creates an UART Modbus client
-  /// @param port UART port
+  /// @brief Creates a stream Modbus client
+  /// @param stream stream
   /// @param protocol Modbus protocol
   /// @param stationAddress station address
   /// @param bufferSize transaction buffer size
-  ModbusClient(std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize = defaultBufferSize);
+  ModbusClient(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize = defaultBufferSize);
 
   /// @brief Creates a network Modbus client with IPv4 remote address
   /// @param address remote IPv4 address
@@ -128,7 +128,7 @@ protected:
 private:
   Mutex mutex;
   ModbusInterface interface;
-  std::shared_ptr<Uart> uart;
+  std::shared_ptr<Stream> stream;
   std::shared_ptr<TcpClient> tcpClient;
   uint8_t stationAddress;
   std::shared_ptr<Buffer> buffer;

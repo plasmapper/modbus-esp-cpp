@@ -9,8 +9,8 @@ namespace PL {
 
 /// @brief Modbus interface
 enum class ModbusInterface {
-  /// @brief UART interface
-  uart,
+  /// @brief stream interface
+  stream,
   /// @brief network interface
   network
 };

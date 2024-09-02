@@ -11,8 +11,8 @@ namespace PL {
 
 //==============================================================================
 
-ModbusClient::ModbusClient(std::shared_ptr<Uart> uart, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
-    ModbusBase(protocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::uart), uart(uart),
+ModbusClient::ModbusClient(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
+    ModbusBase(protocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::stream), stream(stream),
     stationAddress(stationAddress) {}
 
 //==============================================================================
@@ -62,7 +62,7 @@ esp_err_t ModbusClient::Unlock() {
 //==============================================================================
 
 esp_err_t ModbusClient::Command(ModbusFunctionCode functionCode, const void* requestData, size_t requestDataSize, void* responseData, size_t maxResponseDataSize, size_t* responseDataSize, ModbusException* exception) {
-  LockGuard lg(*this, (interface == ModbusInterface::uart ? (Lockable&)*uart : (Lockable&)*tcpClient));
+  LockGuard lg(*this, (interface == ModbusInterface::stream ? (Lockable&)*stream : (Lockable&)*tcpClient));
   Buffer& dataBuffer = GetDataBuffer();
 
   if (exception)
@@ -108,7 +108,7 @@ esp_err_t ModbusClient::ReadInputRegisters(uint16_t address, uint16_t numberOfIt
 //==============================================================================
 
 esp_err_t ModbusClient::WriteSingleCoil(uint16_t address, bool value, ModbusException* exception) {
-  LockGuard lg(*this, (interface == ModbusInterface::uart ? (Lockable&)*uart : (Lockable&)*tcpClient));
+  LockGuard lg(*this, (interface == ModbusInterface::stream ? (Lockable&)*stream : (Lockable&)*tcpClient));
   Buffer& dataBuffer = GetDataBuffer();
 
   if (exception)
@@ -132,7 +132,7 @@ esp_err_t ModbusClient::WriteSingleCoil(uint16_t address, bool value, ModbusExce
 //==============================================================================
 
 esp_err_t ModbusClient::WriteSingleHoldingRegister(uint16_t address, uint16_t value, ModbusException* exception) {
-  LockGuard lg(*this, (interface == ModbusInterface::uart ? (Lockable&)*uart : (Lockable&)*tcpClient));
+  LockGuard lg(*this, (interface == ModbusInterface::stream ? (Lockable&)*stream : (Lockable&)*tcpClient));
   Buffer& dataBuffer = GetDataBuffer();
 
   if (exception)
@@ -156,7 +156,7 @@ esp_err_t ModbusClient::WriteSingleHoldingRegister(uint16_t address, uint16_t va
 //==============================================================================
 
 esp_err_t ModbusClient::WriteMultipleCoils(uint16_t address, uint16_t numberOfItems, const void* requestData, ModbusException* exception) {
-  LockGuard lg(*this, (interface == ModbusInterface::uart ? (Lockable&)*uart : (Lockable&)*tcpClient));
+  LockGuard lg(*this, (interface == ModbusInterface::stream ? (Lockable&)*stream : (Lockable&)*tcpClient));
   Buffer& dataBuffer = GetDataBuffer();
 
   if (exception)
@@ -188,7 +188,7 @@ esp_err_t ModbusClient::WriteMultipleCoils(uint16_t address, uint16_t numberOfIt
 //==============================================================================
 
 esp_err_t ModbusClient::WriteMultipleHoldingRegisters(uint16_t address, uint16_t numberOfItems, const void* requestData, ModbusException* exception) {
-  LockGuard lg(*this, (interface == ModbusInterface::uart ? (Lockable&)*uart : (Lockable&)*tcpClient));
+  LockGuard lg(*this, (interface == ModbusInterface::stream ? (Lockable&)*stream : (Lockable&)*tcpClient));
   Buffer& dataBuffer = GetDataBuffer();
 
   if (exception)
@@ -308,7 +308,7 @@ esp_err_t ModbusClient::Command(ModbusFunctionCode functionCode, size_t requestD
     ESP_RETURN_ON_ERROR(tcpClient->Connect(), TAG, "TCP client connect failed");
   }
   
-  Stream& stream = (interface == ModbusInterface::uart) ? (Stream&)*uart : (Stream&)*tcpClient->GetStream();
+  Stream& stream = (interface == ModbusInterface::stream) ? *this->stream : (Stream&)*tcpClient->GetStream();
 
   Buffer& dataBuffer = GetDataBuffer();
 
@@ -341,7 +341,7 @@ esp_err_t ModbusClient::Command(ModbusFunctionCode functionCode, size_t requestD
 //==============================================================================
 
 esp_err_t ModbusClient::ReadBits(ModbusFunctionCode functionCode, uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception) {
-  LockGuard lg(*this, (interface == ModbusInterface::uart ? (Lockable&)*uart : (Lockable&)*tcpClient));
+  LockGuard lg(*this, (interface == ModbusInterface::stream ? (Lockable&)*stream : (Lockable&)*tcpClient));
   Buffer& dataBuffer = GetDataBuffer();
 
   if (exception)
@@ -367,7 +367,7 @@ esp_err_t ModbusClient::ReadBits(ModbusFunctionCode functionCode, uint16_t addre
 //==============================================================================
 
 esp_err_t ModbusClient::ReadRegisters(ModbusFunctionCode functionCode, uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception) {
-  LockGuard lg(*this, (interface == ModbusInterface::uart ? (Lockable&)*uart : (Lockable&)*tcpClient));
+  LockGuard lg(*this, (interface == ModbusInterface::stream ? (Lockable&)*stream : (Lockable&)*tcpClient));
   Buffer& dataBuffer = GetDataBuffer();
 
   if (exception)

@@ -1,7 +1,6 @@
 #pragma once
 #include "pl_modbus_types.h"
 #include "pl_common.h"
-#include "pl_uart.h"
 #include "pl_network.h"
 
 //==============================================================================
