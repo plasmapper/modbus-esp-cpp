@@ -13,7 +13,7 @@ template <class Type>
 class ModbusTypedMemoryArea : public ModbusMemoryArea {
 public:
   /// @brief typed modbus memory area data
-  Type* data;
+  Type* const data;
 
   /// @brief Creates a typed Modbus memory area and allocate memory 
   /// @param type memory area type

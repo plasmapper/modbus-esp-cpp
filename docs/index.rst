@@ -5,7 +5,7 @@ Modbus Component
 
 .. |ESP_IDF_VERSION| replace:: 5.3
   
-.. |VERSION| replace:: 1.2.0
+.. |VERSION| replace:: 1.2.1
 
 .. include:: ../../../installation.rst
 
@@ -57,13 +57,13 @@ The default :cpp:func:`PL::ModbusServer::HandleRequest` locks the accessed :cpp:
 
 Examples
 --------
-| `UART client <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.0/examples/uart_client>`_
-| `Network client <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.0/examples/network_client>`_
-| `UART server <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.0/examples/uart_server>`_
-| `USB server <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.0/examples/usb_server>`_
-| `Network server <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.0/examples/network_server>`_
-| `Server memory areas <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.0/examples/server_memory_areas>`_
-| `Server user-defined function <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.0/examples/server_user_defined_function>`_
+| `UART client <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.1/examples/uart_client>`_
+| `Network client <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.1/examples/network_client>`_
+| `UART server <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.1/examples/uart_server>`_
+| `USB server <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.1/examples/usb_server>`_
+| `Network server <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.1/examples/network_server>`_
+| `Server memory areas <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.1/examples/server_memory_areas>`_
+| `Server user-defined function <https://components.espressif.com/components/plasmapper/pl_modbus/versions/1.2.1/examples/server_user_defined_function>`_
 
 API reference
 -------------

@@ -1,2 +1,2 @@
 dependencies:
-  plasmapper/pl_modbus: "^1.2.0"
+  plasmapper/pl_modbus: "^1.2.1"
