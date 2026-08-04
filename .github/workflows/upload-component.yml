@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Copy supplementary files
         run: |
@@ -24,8 +24,8 @@ jobs:
           mv ./component ./$COMPONENT_NAME
 
       - name: Upload
-        uses: espressif/upload-components-ci-action@v1
+        uses: espressif/upload-components-ci-action@v2
         with:
-          directories: ${{env.COMPONENT_NAME}}
+          components: "${{env.COMPONENT_NAME}}"
           namespace: "plasmapper"
           api_token: ${{ secrets.IDF_COMPONENT_API_TOKEN }}
