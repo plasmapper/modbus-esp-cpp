@@ -11,7 +11,7 @@ namespace PL {
 class ModbusClient : public ModbusBase {
 public:
   /// @brief Default read operation timeout in FreeRTOS ticks
-  static const TickType_t defaultReadTimeout = 300 / portTICK_PERIOD_MS;
+  static constexpr TickType_t defaultReadTimeout = 300 / portTICK_PERIOD_MS;
 
   /// @brief Creates a stream Modbus client
   /// @param stream stream

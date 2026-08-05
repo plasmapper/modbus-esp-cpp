@@ -14,7 +14,7 @@ public:
   /// @brief Default server name
   static const std::string defaultName; 
   /// @brief Default read operation timeout in FreeRTOS ticks
-  static const TickType_t defaultReadTimeout = 2;
+  static constexpr TickType_t defaultReadTimeout = 2;
 
   /// @brief Creates a stream Modbus server with shared transaction buffer
   /// @param stream stream
