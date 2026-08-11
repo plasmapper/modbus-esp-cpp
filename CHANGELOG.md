@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Reading coils and discrete inputs at the end of a memory area.
+- Reading multiple coils at the end of the request data buffer.
 
 ## [1.2.1] - 2024-09-12
 ### Fixed

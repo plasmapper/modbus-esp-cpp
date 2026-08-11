@@ -338,12 +338,17 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
       }
 
       uint8_t* memoryData = (uint8_t*)memoryArea->data + (memoryAddress - memoryArea->address) / 8;
+      uint8_t* dataBufferEnd = (uint8_t*)dataBuffer.data + dataBuffer.size;
       uint_fast8_t memoryBitOffset = (memoryAddress - memoryArea->address) % 8;
       memorySize = (memoryBitOffset + numberOfMemoryItems - 1) / 8 + 1;
       for (uint_fast8_t i = 0; i < memorySize; i++) {
         uint_fast8_t memoryValue = 0;
-        if (i)
-          memoryValue = *(uint16_t*)((uint8_t*)dataBuffer.data + i + 4) >> (8 - memoryBitOffset);
+        if (i) {
+          uint8_t* dataBufferPtr = (uint8_t*)dataBuffer.data + i + 4;
+          memoryValue = dataBufferPtr[0] >> (8 - memoryBitOffset);
+          if (dataBufferPtr + 1 < dataBufferEnd)
+            memoryValue |= dataBufferPtr[1] << memoryBitOffset;
+        }
         else
           memoryValue = (((uint8_t*)dataBuffer.data)[5] << memoryBitOffset) | (*memoryData & lowerBits[memoryBitOffset]);
         if (i == memorySize - 1 && (memoryBitOffset + numberOfMemoryItems) % 8) {
