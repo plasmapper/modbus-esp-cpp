@@ -68,7 +68,7 @@ esp_err_t ModbusClient::Command(ModbusFunctionCode functionCode, const void* req
   ESP_RETURN_ON_FALSE(dataBuffer.size >= requestDataSize, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
   if (requestData)
     memcpy(dataBuffer.data, requestData, requestDataSize);
-  size_t tempResponseDataSize; 
+  size_t tempResponseDataSize = 0;
   ESP_RETURN_ON_ERROR(Command(functionCode, requestDataSize, tempResponseDataSize, exception), TAG, "command failed");
   ESP_RETURN_ON_FALSE(tempResponseDataSize <= maxResponseDataSize, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
   if (responseDataSize)
