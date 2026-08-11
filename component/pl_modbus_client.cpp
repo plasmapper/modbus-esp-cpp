@@ -311,6 +311,7 @@ esp_err_t ModbusClient::Command(ModbusFunctionCode functionCode, size_t requestD
 
   stream.Read(NULL, stream.GetReadableSize());
 
+  transactionId++;
   ESP_RETURN_ON_ERROR(WriteFrame(stream, stationAddress, functionCode, requestDataSize, transactionId), TAG, "write frame failed");
   if (stationAddress == 0)
     return ESP_OK;
@@ -320,7 +321,7 @@ esp_err_t ModbusClient::Command(ModbusFunctionCode functionCode, size_t requestD
   uint16_t responseTransactionId;
   do {
     ESP_RETURN_ON_ERROR(ReadFrame(stream, responseStationAddress, responseFunctionCode, responseDataSize, responseTransactionId), TAG, "read frame failed");
-  } while (responseTransactionId != transactionId);
+  } while (GetProtocol() == ModbusProtocol::tcp && responseTransactionId != transactionId);
 
   ESP_RETURN_ON_FALSE(responseStationAddress == stationAddress, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response station address");
   ESP_RETURN_ON_FALSE((uint8_t)functionCode == ((uint8_t)responseFunctionCode & 0x7F), ESP_ERR_INVALID_RESPONSE, TAG, "invalid response function code");

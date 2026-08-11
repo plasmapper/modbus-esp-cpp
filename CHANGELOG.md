@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reading coils and discrete inputs at the end of a memory area.
 - Reading multiple coils at the end of the request data buffer.
 - Command response size not being initialized.
+- TCP client transaction ID never changing.
 
 ## [1.2.1] - 2024-09-12
 ### Fixed
