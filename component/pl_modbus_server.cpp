@@ -185,8 +185,11 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
       return ESP_OK;
     }
 
-    uint_fast16_t memoryAddress = __builtin_bswap16(((uint16_t*)dataBuffer.data)[0]);
-    uint_fast16_t numberOfMemoryItems = __builtin_bswap16(((uint16_t*)dataBuffer.data)[1]);
+    uint16_t tempUInt16;
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+    uint_fast16_t memoryAddress = __builtin_bswap16(tempUInt16);
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+    uint_fast16_t numberOfMemoryItems = __builtin_bswap16(tempUInt16);
     if (numberOfMemoryItems == 0 || numberOfMemoryItems > maxNumberOfModbusBitsToRead || dataBuffer.size < (numberOfMemoryItems - 1) / 8 + 2) {
       ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
@@ -234,8 +237,11 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
       return ESP_OK;
     }
 
-    uint_fast16_t memoryAddress = __builtin_bswap16(((uint16_t*)dataBuffer.data)[0]);
-    uint_fast16_t numberOfMemoryItems = __builtin_bswap16(((uint16_t*)dataBuffer.data)[1]);
+    uint16_t tempUInt16;
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+    uint_fast16_t memoryAddress = __builtin_bswap16(tempUInt16);
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+    uint_fast16_t numberOfMemoryItems = __builtin_bswap16(tempUInt16);
     if (numberOfMemoryItems == 0 || numberOfMemoryItems > maxNumberOfModbusRegistersToRead || dataBuffer.size < numberOfMemoryItems * 2 + 1) {
       ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
@@ -253,10 +259,14 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
         return ESP_OK;
       }
 
-      uint16_t* memoryData = (uint16_t*)memoryArea->data + (memoryAddress - memoryArea->address);
+      uint8_t* memoryData = (uint8_t*)memoryArea->data + (memoryAddress - memoryArea->address) * 2;
       ((uint8_t*)dataBuffer.data)[0] = numberOfMemoryItems * 2;
-      for (uint_fast16_t i = 0; i < numberOfMemoryItems; i++)
-        ((uint16_t*)((uint8_t*)dataBuffer.data + 1))[i] = __builtin_bswap16(memoryData[i]);
+      for (uint_fast16_t i = 0; i < numberOfMemoryItems; i++) {
+        uint16_t registerValue;
+        memcpy(&registerValue, memoryData + i * 2, 2);
+        registerValue = __builtin_bswap16(registerValue);
+        memcpy((uint8_t*)dataBuffer.data + 1 + i * 2, &registerValue, 2);
+      }
 
       ESP_RETURN_ON_ERROR(WriteFrame(stream, stationAddress, functionCode, numberOfMemoryItems * 2 + 1, transactionId), TAG, "write frame failed");
       return ESP_OK;
@@ -273,8 +283,11 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
       return ESP_OK;
     }
 
-    uint_fast16_t memoryAddress = __builtin_bswap16(((uint16_t*)dataBuffer.data)[0]);
-    uint_fast16_t memoryValue = __builtin_bswap16(((uint16_t*)dataBuffer.data)[1]);
+    uint16_t tempUInt16;
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+    uint_fast16_t memoryAddress = __builtin_bswap16(tempUInt16);
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+    uint_fast16_t memoryValue = __builtin_bswap16(tempUInt16);
     if ((functionCode == ModbusFunctionCode::writeSingleCoil && memoryValue != 0 && memoryValue != 0xFF00) || dataBuffer.size < 4) {
       ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
@@ -296,8 +309,10 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
         else
           *(uint8_t*)memoryData &= ~(1 << memoryBitOffset);
       }        
-      else
-        *((uint16_t*)memoryArea->data + (memoryAddress - memoryArea->address)) = memoryValue;
+      else {
+        uint16_t registerValue = memoryValue;
+        memcpy((uint8_t*)memoryArea->data + (memoryAddress - memoryArea->address) * 2, &registerValue, 2);
+      }
     
       if (memoryArea->OnWrite() == ESP_OK)
         ESP_RETURN_ON_ERROR(stationAddress == 0 ? ESP_OK : WriteFrame(stream, stationAddress, functionCode, 4, transactionId), TAG, "write frame failed");
@@ -317,8 +332,11 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
       return ESP_OK;
     }
 
-    uint_fast16_t memoryAddress = __builtin_bswap16(((uint16_t*)dataBuffer.data)[0]);
-    uint_fast16_t numberOfMemoryItems = __builtin_bswap16(((uint16_t*)dataBuffer.data)[1]);
+    uint16_t tempUInt16;
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+    uint_fast16_t memoryAddress = __builtin_bswap16(tempUInt16);
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+    uint_fast16_t numberOfMemoryItems = __builtin_bswap16(tempUInt16);
     uint_fast8_t memorySize = ((uint8_t*)dataBuffer.data)[4];
     if (numberOfMemoryItems == 0 || numberOfMemoryItems > maxNumberOfModbusBitsToWrite || dataSize != memorySize + 5 || memorySize != (numberOfMemoryItems - 1) / 8 + 1) {
       ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
@@ -376,8 +394,11 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
       return ESP_OK;
     }
 
-    uint_fast16_t memoryAddress = __builtin_bswap16(((uint16_t*)dataBuffer.data)[0]);
-    uint_fast16_t numberOfMemoryItems = __builtin_bswap16(((uint16_t*)dataBuffer.data)[1]);
+    uint16_t tempUInt16;
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+    uint_fast16_t memoryAddress = __builtin_bswap16(tempUInt16);
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+    uint_fast16_t numberOfMemoryItems = __builtin_bswap16(tempUInt16);
     uint_fast8_t memorySize = ((uint8_t*)dataBuffer.data)[4];
     if (numberOfMemoryItems == 0 || numberOfMemoryItems > maxNumberOfModbusRegistersToWrite || dataSize != memorySize + 5 || memorySize != numberOfMemoryItems * 2) {
       ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
@@ -396,9 +417,13 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
         return ESP_OK;
       }
 
-      uint16_t* memoryData = (uint16_t*)memoryArea->data + (memoryAddress - memoryArea->address);
-      for (uint_fast16_t i = 0; i < numberOfMemoryItems; i++)
-          memoryData[i] = __builtin_bswap16(((uint16_t*)((uint8_t*)dataBuffer.data + 5))[i]);
+      uint8_t* memoryData = (uint8_t*)memoryArea->data + (memoryAddress - memoryArea->address) * 2;
+      for (uint_fast16_t i = 0; i < numberOfMemoryItems; i++) {
+        uint16_t registerValue;
+        memcpy(&registerValue, (uint8_t*)dataBuffer.data + 5 + i * 2, 2);
+        registerValue = __builtin_bswap16(registerValue);
+        memcpy(memoryData + i * 2, &registerValue, 2);
+      }
 
       if (memoryArea->OnWrite() == ESP_OK)
         ESP_RETURN_ON_ERROR(stationAddress == 0 ? ESP_OK : WriteFrame(stream, stationAddress, functionCode, 4, transactionId), TAG, "write frame failed");

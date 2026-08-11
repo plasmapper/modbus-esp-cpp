@@ -111,18 +111,21 @@ esp_err_t ModbusClient::WriteSingleCoil(uint16_t address, bool value, ModbusExce
   if (exception)
     *exception = ModbusException::noException;
 
-  ESP_RETURN_ON_FALSE(dataBuffer.size >= 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small"); 
-  ((uint16_t*)dataBuffer.data)[0] = __builtin_bswap16(address);
+  ESP_RETURN_ON_FALSE(dataBuffer.size >= 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
+  uint16_t tempUInt16;
+  memcpy((uint8_t*)dataBuffer.data + 0, &(tempUInt16 = __builtin_bswap16(address)), 2);
   uint16_t u16Value = value ? 0x00FF : 0;
-  ((uint16_t*)dataBuffer.data)[1] = u16Value;
+  memcpy((uint8_t*)dataBuffer.data + 2, &(tempUInt16 = u16Value), 2);
 
-  size_t responseDataSize; 
+  size_t responseDataSize;
   ESP_RETURN_ON_ERROR(Command(ModbusFunctionCode::writeSingleCoil, 4, responseDataSize, exception), TAG, "command failed");
   if (stationAddress == 0)
     return ESP_OK;
   ESP_RETURN_ON_FALSE(responseDataSize == 4, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response data size");
-  ESP_RETURN_ON_FALSE(__builtin_bswap16(((uint16_t*)dataBuffer.data)[0]) == address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
-  ESP_RETURN_ON_FALSE(((uint16_t*)dataBuffer.data)[1] == u16Value, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory value");
+  memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+  ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
+  memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+  ESP_RETURN_ON_FALSE(tempUInt16 == u16Value, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory value");
   return ESP_OK;
 }
 
@@ -136,17 +139,20 @@ esp_err_t ModbusClient::WriteSingleHoldingRegister(uint16_t address, uint16_t va
     *exception = ModbusException::noException;
 
   ESP_RETURN_ON_FALSE(dataBuffer.size >= 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
-  ((uint16_t*)dataBuffer.data)[0] = __builtin_bswap16(address);
-  ((uint16_t*)dataBuffer.data)[1] = __builtin_bswap16(value);
+  uint16_t tempUInt16;
+  memcpy((uint8_t*)dataBuffer.data + 0, &(tempUInt16 = __builtin_bswap16(address)), 2);
+  memcpy((uint8_t*)dataBuffer.data + 2, &(tempUInt16 = __builtin_bswap16(value)), 2);
 
-  size_t responseDataSize; 
+  size_t responseDataSize;
   ESP_RETURN_ON_ERROR(Command(ModbusFunctionCode::writeSingleHoldingRegister, 4, responseDataSize, exception), TAG, "command failed");
 
   if (stationAddress == 0)
     return ESP_OK;
   ESP_RETURN_ON_FALSE(responseDataSize == 4, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response data size");
-  ESP_RETURN_ON_FALSE(__builtin_bswap16(((uint16_t*)dataBuffer.data)[0]) == address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
-  ESP_RETURN_ON_FALSE(__builtin_bswap16(((uint16_t*)dataBuffer.data)[1]) == value, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory value");
+  memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+  ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
+  memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+  ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == value, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory value");
   return ESP_OK;
 }
 
@@ -166,8 +172,9 @@ esp_err_t ModbusClient::WriteMultipleCoils(uint16_t address, uint16_t numberOfIt
 
     ESP_RETURN_ON_FALSE(dataBuffer.size >= memoryDataSize + 5, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
 
-    ((uint16_t*)dataBuffer.data)[0] = __builtin_bswap16(addressRange.address);
-    ((uint16_t*)dataBuffer.data)[1] = __builtin_bswap16(addressRange.numberOfItems);
+    uint16_t tempUInt16;
+    memcpy((uint8_t*)dataBuffer.data + 0, &(tempUInt16 = __builtin_bswap16(addressRange.address)), 2);
+    memcpy((uint8_t*)dataBuffer.data + 2, &(tempUInt16 = __builtin_bswap16(addressRange.numberOfItems)), 2);
     ((uint8_t*)dataBuffer.data)[4] = memoryDataSize;
     if (requestData)
       memcpy((uint8_t*)dataBuffer.data + 5, (uint8_t*)requestData + (addressRange.address - address) / 8, memoryDataSize);
@@ -177,8 +184,10 @@ esp_err_t ModbusClient::WriteMultipleCoils(uint16_t address, uint16_t numberOfIt
     if (stationAddress == 0)
       return ESP_OK;
     ESP_RETURN_ON_FALSE(responseDataSize == 4, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response data size");
-    ESP_RETURN_ON_FALSE(__builtin_bswap16(((uint16_t*)dataBuffer.data)[0]) == addressRange.address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
-    ESP_RETURN_ON_FALSE(__builtin_bswap16(((uint16_t*)dataBuffer.data)[1]) == addressRange.numberOfItems, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response number of items");
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+    ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+    ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.numberOfItems, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response number of items");
   }
   return ESP_OK;
 }
@@ -199,13 +208,18 @@ esp_err_t ModbusClient::WriteMultipleHoldingRegisters(uint16_t address, uint16_t
 
     ESP_RETURN_ON_FALSE(dataBuffer.size >= memoryDataSize + 5, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
 
-    ((uint16_t*)dataBuffer.data)[0] = __builtin_bswap16(addressRange.address);
-    ((uint16_t*)dataBuffer.data)[1] = __builtin_bswap16(addressRange.numberOfItems);
+    uint16_t tempUInt16;
+    memcpy((uint8_t*)dataBuffer.data + 0, &(tempUInt16 = __builtin_bswap16(addressRange.address)), 2);
+    memcpy((uint8_t*)dataBuffer.data + 2, &(tempUInt16 = __builtin_bswap16(addressRange.numberOfItems)), 2);
     ((uint8_t*)dataBuffer.data)[4] = memoryDataSize;
 
     if (requestData) {
-      for (uint_fast16_t i = 0; i < addressRange.numberOfItems; i++)
-        ((uint16_t*)((uint8_t*)dataBuffer.data + 5))[i] = __builtin_bswap16(((uint16_t*)requestData)[addressRange.address - address + i]);
+      for (uint_fast16_t i = 0; i < addressRange.numberOfItems; i++) {
+        uint16_t registerValue;
+        memcpy(&registerValue, (uint8_t*)requestData + (addressRange.address - address + i) * 2, 2);
+        registerValue = __builtin_bswap16(registerValue);
+        memcpy((uint8_t*)dataBuffer.data + 5 + i * 2, &registerValue, 2);
+      }
     }
 
     size_t responseDataSize; 
@@ -213,8 +227,10 @@ esp_err_t ModbusClient::WriteMultipleHoldingRegisters(uint16_t address, uint16_t
     if (stationAddress == 0)
       return ESP_OK;
     ESP_RETURN_ON_FALSE(responseDataSize == 4, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response data size");
-    ESP_RETURN_ON_FALSE(__builtin_bswap16(((uint16_t*)dataBuffer.data)[0]) == addressRange.address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
-    ESP_RETURN_ON_FALSE(__builtin_bswap16(((uint16_t*)dataBuffer.data)[1]) == addressRange.numberOfItems, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response number of items");
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+    ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
+    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+    ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.numberOfItems, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response number of items");
   }
   return ESP_OK;
 }
@@ -351,8 +367,9 @@ esp_err_t ModbusClient::ReadBits(ModbusFunctionCode functionCode, uint16_t addre
   ESP_RETURN_ON_FALSE(dataBuffer.size >= 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
 
   for (auto& addressRange : SplitAddressRange(address, numberOfItems, maxNumberOfModbusBitsToRead)) {
-    ((uint16_t*)dataBuffer.data)[0] = __builtin_bswap16(addressRange.address);
-    ((uint16_t*)dataBuffer.data)[1] = __builtin_bswap16(addressRange.numberOfItems);
+    uint16_t tempUInt16;
+    memcpy((uint8_t*)dataBuffer.data + 0, &(tempUInt16 = __builtin_bswap16(addressRange.address)), 2);
+    memcpy((uint8_t*)dataBuffer.data + 2, &(tempUInt16 = __builtin_bswap16(addressRange.numberOfItems)), 2);
 
     size_t responseDataSize; 
     size_t memoryDataSize = (addressRange.numberOfItems - 1) / 8 + 1;
@@ -378,8 +395,9 @@ esp_err_t ModbusClient::ReadRegisters(ModbusFunctionCode functionCode, uint16_t 
   ESP_RETURN_ON_FALSE(dataBuffer.size >= 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
 
   for (auto& addressRange : SplitAddressRange(address, numberOfItems, maxNumberOfModbusRegistersToRead)) {
-    ((uint16_t*)dataBuffer.data)[0] = __builtin_bswap16(addressRange.address);
-    ((uint16_t*)dataBuffer.data)[1] = __builtin_bswap16(addressRange.numberOfItems);
+    uint16_t tempUInt16;
+    memcpy((uint8_t*)dataBuffer.data + 0, &(tempUInt16 = __builtin_bswap16(addressRange.address)), 2);
+    memcpy((uint8_t*)dataBuffer.data + 2, &(tempUInt16 = __builtin_bswap16(addressRange.numberOfItems)), 2);
 
     size_t responseDataSize; 
     size_t memoryDataSize = addressRange.numberOfItems * 2;
@@ -388,8 +406,12 @@ esp_err_t ModbusClient::ReadRegisters(ModbusFunctionCode functionCode, uint16_t 
     ESP_RETURN_ON_FALSE(((uint8_t*)dataBuffer.data)[0] == memoryDataSize, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response byte size"); 
 
     if (responseData) {
-      for (uint_fast16_t i = 0; i < addressRange.numberOfItems; i++)
-        ((uint16_t*)responseData)[addressRange.address - address + i] = __builtin_bswap16(((uint16_t*)((uint8_t*)dataBuffer.data + 1))[i]);
+      for (uint_fast16_t i = 0; i < addressRange.numberOfItems; i++) {
+        uint16_t registerValue;
+        memcpy(&registerValue, (uint8_t*)dataBuffer.data + 1 + i * 2, 2);
+        registerValue = __builtin_bswap16(registerValue);
+        memcpy((uint8_t*)responseData + (addressRange.address - address + i) * 2, &registerValue, 2);
+      }
     }
   }
   return ESP_OK;

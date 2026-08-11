@@ -13,6 +13,7 @@ namespace PL {
 class ModbusBase : public virtual Lockable {
 public:
   /// @brief Default transaction buffer size
+  /// @note Sized for the largest RTU/TCP transaction.
   static constexpr size_t defaultBufferSize = 260;
   /// @brief Default protocol for network interface
   static constexpr ModbusProtocol defaultNetworkProtocol = ModbusProtocol::tcp;

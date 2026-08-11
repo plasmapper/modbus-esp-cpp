@@ -221,7 +221,8 @@ esp_err_t ModbusBase::WriteFrame(Stream& stream, uint8_t stationAddress, ModbusF
     ESP_RETURN_ON_FALSE(buffer->size >= dataSize + 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
     ((uint8_t*)buffer->data)[0] = stationAddress;
     ((uint8_t*)buffer->data)[1] = (uint8_t)functionCode;
-    *(uint16_t*)((uint8_t*)buffer->data + 2 + dataSize) = Crc(2 + dataSize);
+    uint16_t tempUInt16;
+    memcpy((uint8_t*)buffer->data + 2 + dataSize, &(tempUInt16 = Crc(2 + dataSize)), 2);
 
     ESP_RETURN_ON_ERROR(stream.Write(*buffer, 0, dataSize + 4), TAG, "stream write error");
     return ESP_OK;
@@ -232,6 +233,9 @@ esp_err_t ModbusBase::WriteFrame(Stream& stream, uint8_t stationAddress, ModbusF
     ((uint8_t*)buffer->data)[0] = stationAddress;
     ((uint8_t*)buffer->data)[1] = (uint8_t)functionCode;
     ((uint8_t*)buffer->data)[dataSize + 2] = Lrc(dataSize + 2);
+    // Expands each raw byte into 2 ASCII hex characters in place.
+    // Goes from the end backwards: iteration i writes to indices 2i+1/2i+2, which are higher
+    // than any index a later iteration will read, so writes never overwrite not-yet-read source bytes.
     for (int i = dataSize + 2; i >= 0; i--) {
       uint8_t byteData = ((uint8_t*)buffer->data)[i] >> 4;
       ((uint8_t*)buffer->data)[i * 2 + 1] = (byteData > 9)?(byteData - 10 + 'A'):(byteData + '0');
@@ -248,9 +252,10 @@ esp_err_t ModbusBase::WriteFrame(Stream& stream, uint8_t stationAddress, ModbusF
 
   if (protocol == ModbusProtocol::tcp) {
     ESP_RETURN_ON_FALSE(buffer->size >= dataSize + 8 && dataSize <= 0xFFFD, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
-    ((uint16_t*)buffer->data)[0] = __builtin_bswap16(transactionId);
-    ((uint16_t*)buffer->data)[1] = 0;
-    ((uint16_t*)buffer->data)[2] = __builtin_bswap16((uint16_t)(dataSize + 2));
+    uint16_t tempUInt16;
+    memcpy((uint8_t*)buffer->data + 0, &(tempUInt16 = __builtin_bswap16(transactionId)), 2);
+    memcpy((uint8_t*)buffer->data + 2, &(tempUInt16 = 0), 2);
+    memcpy((uint8_t*)buffer->data + 4, &(tempUInt16 = __builtin_bswap16((uint16_t)(dataSize + 2))), 2);
     ((uint8_t*)buffer->data)[6] = stationAddress;
     ((uint8_t*)buffer->data)[7] = (uint8_t)functionCode;
 
