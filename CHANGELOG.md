@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Lock timeout handling.
 - Static const members to constexpr.
+- CMake minimum required version to 3.22.
+- ESP-IDF, pl_common and pl_network dependency version requirements.
+
+### Fixed
+- Reading coils and discrete inputs at the end of a memory area.
 
 ## [1.2.1] - 2024-09-12
 ### Fixed
