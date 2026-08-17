@@ -337,10 +337,14 @@ esp_err_t ModbusClient::Command(ModbusFunctionCode functionCode, size_t requestD
   uint8_t responseStationAddress;
   ModbusFunctionCode responseFunctionCode;
   uint16_t responseTransactionId;
+  TimeOut_t xTimeOut;
+  vTaskSetTimeOutState(&xTimeOut);
+  TickType_t remainingTimeout = GetReadTimeout();
   do {
     ESP_RETURN_ON_ERROR(ReadFrame(stream, responseStationAddress, responseFunctionCode, responseDataSize, responseTransactionId), TAG, "read frame failed");
-  } while (GetProtocol() == ModbusProtocol::tcp && responseTransactionId != transactionId);
+  } while (GetProtocol() == ModbusProtocol::tcp && responseTransactionId != transactionId && xTaskCheckForTimeOut(&xTimeOut, &remainingTimeout) == pdFALSE);
 
+  ESP_RETURN_ON_FALSE(GetProtocol() != ModbusProtocol::tcp || responseTransactionId == transactionId, ESP_ERR_TIMEOUT, TAG, "transaction id match timeout");
   ESP_RETURN_ON_FALSE(responseStationAddress == stationAddress, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response station address");
   ESP_RETURN_ON_FALSE((uint8_t)functionCode == ((uint8_t)responseFunctionCode & 0x7F), ESP_ERR_INVALID_RESPONSE, TAG, "invalid response function code");
   
