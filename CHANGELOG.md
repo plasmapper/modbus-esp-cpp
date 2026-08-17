@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - ModbusClient::Command TCP transaction ID matching loop having no overall timeout.
+- ModbusClient::ReadRtuData not flushing the read buffer on an unrecognized function code.
 
 ## [1.3.0] - 2026-08-11
 ### Changed
