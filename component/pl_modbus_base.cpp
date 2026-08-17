@@ -80,6 +80,21 @@ esp_err_t ModbusBase::SetReadTimeout(TickType_t timeout) {
 
 //==============================================================================
 
+TickType_t ModbusBase::GetWriteTimeout() {
+  LockGuard lg(*this);
+  return writeTimeout;
+}
+
+//==============================================================================
+
+esp_err_t ModbusBase::SetWriteTimeout(TickType_t timeout) {
+  LockGuard lg(*this);
+  writeTimeout = timeout;
+  return ESP_OK;
+}
+
+//==============================================================================
+
 TickType_t ModbusBase::GetDelayAfterRead() {
   LockGuard lg(*this);
   return delayAfterRead;
@@ -95,7 +110,8 @@ esp_err_t ModbusBase::SetDelayAfterRead(TickType_t delay) {
 
 //==============================================================================
 
-ModbusBase::ModbusBase(ModbusProtocol protocol, std::shared_ptr<Buffer> buffer, TickType_t readTimeout) : protocol(protocol), buffer(buffer), readTimeout(readTimeout) {
+ModbusBase::ModbusBase(ModbusProtocol protocol, std::shared_ptr<Buffer> buffer, TickType_t readTimeout, TickType_t writeTimeout) :
+    protocol(protocol), buffer(buffer), readTimeout(readTimeout), writeTimeout(writeTimeout) {
   if (protocol != ModbusProtocol::rtu && protocol != ModbusProtocol::ascii && protocol != ModbusProtocol::tcp)
     this->protocol = ModbusProtocol::rtu;
   InitializeDataBuffer();
@@ -103,7 +119,8 @@ ModbusBase::ModbusBase(ModbusProtocol protocol, std::shared_ptr<Buffer> buffer, 
 
 //==============================================================================
 
-ModbusBase::ModbusBase(ModbusProtocol protocol, size_t bufferSize, TickType_t readTimeout) : ModbusBase(protocol, std::make_shared<Buffer>(bufferSize), readTimeout) {}
+ModbusBase::ModbusBase(ModbusProtocol protocol, size_t bufferSize, TickType_t readTimeout, TickType_t writeTimeout) :
+    ModbusBase(protocol, std::make_shared<Buffer>(bufferSize), readTimeout, writeTimeout) {}
 
 //==============================================================================
 
@@ -214,6 +231,8 @@ esp_err_t ModbusBase::ReadFrame(Stream& stream, uint8_t& stationAddress, ModbusF
 //==============================================================================
 
 esp_err_t ModbusBase::WriteFrame(Stream& stream, uint8_t stationAddress, ModbusFunctionCode functionCode, size_t dataSize, uint16_t transactionId) {
+  ESP_RETURN_ON_ERROR(stream.SetWriteTimeout(writeTimeout), TAG, "set timeout failed");
+
   if (protocol != ModbusProtocol::tcp && stream.GetReadableSize())
     return ESP_ERR_INVALID_STATE;
 

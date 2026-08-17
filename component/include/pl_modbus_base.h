@@ -42,10 +42,19 @@ public:
   /// @return timeout in FreeRTOS ticks
   TickType_t GetReadTimeout();
 
-  /// @brief Sets the read operation timeout 
+  /// @brief Sets the read operation timeout
   /// @param timeout timeout in FreeRTOS ticks
   /// @return error code
   esp_err_t SetReadTimeout(TickType_t timeout);
+
+  /// @brief Gets the write operation timeout
+  /// @return timeout in FreeRTOS ticks
+  TickType_t GetWriteTimeout();
+
+  /// @brief Sets the write operation timeout
+  /// @param timeout timeout in FreeRTOS ticks
+  /// @return error code
+  esp_err_t SetWriteTimeout(TickType_t timeout);
 
   /// @brief Gets the delay between the end of the read operation and unlocking the stream
   /// @return delay in FreeRTOS ticks
@@ -57,8 +66,8 @@ public:
   esp_err_t SetDelayAfterRead(TickType_t delay);
 
 protected:
-  ModbusBase(ModbusProtocol protocol, std::shared_ptr<Buffer> buffer, TickType_t readTimeout);
-  ModbusBase(ModbusProtocol protocol, size_t bufferSize, TickType_t readTimeout);
+  ModbusBase(ModbusProtocol protocol, std::shared_ptr<Buffer> buffer, TickType_t readTimeout, TickType_t writeTimeout);
+  ModbusBase(ModbusProtocol protocol, size_t bufferSize, TickType_t readTimeout, TickType_t writeTimeout);
 
   /// @brief Reads the Modbus frame
   /// @param stream stream to read from
@@ -94,6 +103,7 @@ private:
   std::shared_ptr<Buffer> buffer;
   std::shared_ptr<Buffer> dataBuffer;
   TickType_t readTimeout;
+  TickType_t writeTimeout;
   TickType_t delayAfterRead = 0;
 
   uint16_t Crc(size_t size);

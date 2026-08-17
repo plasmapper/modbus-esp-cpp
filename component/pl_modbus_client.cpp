@@ -12,13 +12,13 @@ namespace PL {
 //==============================================================================
 
 ModbusClient::ModbusClient(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
-    ModbusBase(protocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::stream), stream(stream),
+    ModbusBase(protocol, bufferSize, defaultReadTimeout, defaultWriteTimeout), interface(ModbusInterface::stream), stream(stream),
     stationAddress(stationAddress) {}
 
 //==============================================================================
 
 ModbusClient::ModbusClient(IpV4Address address, uint16_t port, size_t bufferSize) :
-    ModbusBase(defaultNetworkProtocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::network), tcpClient(std::make_shared<TcpClient>(address, port)),
+    ModbusBase(defaultNetworkProtocol, bufferSize, defaultReadTimeout, defaultWriteTimeout), interface(ModbusInterface::network), tcpClient(std::make_shared<TcpClient>(address, port)),
     stationAddress(defaultNetworkStationAddress) {
   tcpClient->DisableNagleAlgorithm();
 }
@@ -26,7 +26,7 @@ ModbusClient::ModbusClient(IpV4Address address, uint16_t port, size_t bufferSize
 //==============================================================================
 
 ModbusClient::ModbusClient(IpV6Address address, uint16_t port, size_t bufferSize) :
-    ModbusBase(defaultNetworkProtocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::network), tcpClient(std::make_shared<TcpClient>(address, port)),
+    ModbusBase(defaultNetworkProtocol, bufferSize, defaultReadTimeout, defaultWriteTimeout), interface(ModbusInterface::network), tcpClient(std::make_shared<TcpClient>(address, port)),
     stationAddress(defaultNetworkStationAddress) {
   tcpClient->DisableNagleAlgorithm();
 }
@@ -34,7 +34,7 @@ ModbusClient::ModbusClient(IpV6Address address, uint16_t port, size_t bufferSize
 //==============================================================================
 
 ModbusClient::ModbusClient(std::shared_ptr<TcpClient> tcpClient, size_t bufferSize) :
-    ModbusBase(defaultNetworkProtocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::network), tcpClient(tcpClient),
+    ModbusBase(defaultNetworkProtocol, bufferSize, defaultReadTimeout, defaultWriteTimeout), interface(ModbusInterface::network), tcpClient(tcpClient),
     stationAddress(defaultNetworkStationAddress) {
   tcpClient->DisableNagleAlgorithm();
 }

@@ -12,6 +12,8 @@ class ModbusClient : public ModbusBase {
 public:
   /// @brief Default read operation timeout in FreeRTOS ticks
   static constexpr TickType_t defaultReadTimeout = 300 / portTICK_PERIOD_MS;
+  /// @brief Default write operation timeout in FreeRTOS ticks
+  static constexpr TickType_t defaultWriteTimeout = 300 / portTICK_PERIOD_MS;
 
   /// @brief Creates a stream Modbus client
   /// @param stream stream

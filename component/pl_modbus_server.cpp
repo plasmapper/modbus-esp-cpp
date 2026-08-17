@@ -18,7 +18,7 @@ const std::string ModbusServer::defaultName = "Modbus Server";
 //==============================================================================
 
 ModbusServer::ModbusServer(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer) :
-    ModbusBase(protocol, buffer, defaultReadTimeout), interface(ModbusInterface::stream), streamServer(std::make_shared<StreamServer>(stream, *this)),
+    ModbusBase(protocol, buffer, defaultReadTimeout, defaultWriteTimeout), interface(ModbusInterface::stream), streamServer(std::make_shared<StreamServer>(stream, *this)),
     stationAddress(stationAddress) {
   SetName(defaultName);
 }
@@ -26,7 +26,7 @@ ModbusServer::ModbusServer(std::shared_ptr<Stream> stream, ModbusProtocol protoc
 //==============================================================================
 
 ModbusServer::ModbusServer(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, size_t bufferSize) :
-    ModbusBase(protocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::stream), streamServer(std::make_shared<StreamServer>(stream, *this)),
+    ModbusBase(protocol, bufferSize, defaultReadTimeout, defaultWriteTimeout), interface(ModbusInterface::stream), streamServer(std::make_shared<StreamServer>(stream, *this)),
     stationAddress(stationAddress) {
   SetName(defaultName);
 }
@@ -34,7 +34,7 @@ ModbusServer::ModbusServer(std::shared_ptr<Stream> stream, ModbusProtocol protoc
 //==============================================================================
 
 ModbusServer::ModbusServer(uint16_t port, std::shared_ptr<Buffer> buffer) :
-    ModbusBase(defaultNetworkProtocol, buffer, defaultReadTimeout), interface(ModbusInterface::network), tcpServer(std::make_shared<TcpServer>(port, *this)),
+    ModbusBase(defaultNetworkProtocol, buffer, defaultReadTimeout, defaultWriteTimeout), interface(ModbusInterface::network), tcpServer(std::make_shared<TcpServer>(port, *this)),
     stationAddress(defaultNetworkStationAddress) {
   SetName(defaultName);
 }
@@ -42,7 +42,7 @@ ModbusServer::ModbusServer(uint16_t port, std::shared_ptr<Buffer> buffer) :
 //==============================================================================
 
 ModbusServer::ModbusServer(uint16_t port, size_t bufferSize) :
-    ModbusBase(defaultNetworkProtocol, bufferSize, defaultReadTimeout), interface(ModbusInterface::network), tcpServer(std::make_shared<TcpServer>(port, *this)),
+    ModbusBase(defaultNetworkProtocol, bufferSize, defaultReadTimeout, defaultWriteTimeout), interface(ModbusInterface::network), tcpServer(std::make_shared<TcpServer>(port, *this)),
     stationAddress(defaultNetworkStationAddress) {
   SetName(defaultName);
 }

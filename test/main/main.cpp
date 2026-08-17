@@ -66,7 +66,9 @@ extern "C" void app_main(void) {
   TEST_ASSERT_EQUAL(PL::ModbusServer::defaultNetworkStationAddress, server.GetStationAddress());
   TEST_ASSERT_EQUAL(PL::ModbusServer::defaultNetworkStationAddress, client.GetStationAddress());
   TEST_ASSERT_EQUAL(PL::ModbusServer::defaultReadTimeout, server.GetReadTimeout());
+  TEST_ASSERT_EQUAL(PL::ModbusServer::defaultWriteTimeout, server.GetWriteTimeout());
   TEST_ASSERT_EQUAL(PL::ModbusClient::defaultReadTimeout, client.GetReadTimeout());
+  TEST_ASSERT_EQUAL(PL::ModbusClient::defaultWriteTimeout, client.GetWriteTimeout());
   TEST_ASSERT_EQUAL(0, server.GetDelayAfterRead());
   TEST_ASSERT_EQUAL(0, client.GetDelayAfterRead());
 
@@ -77,8 +79,12 @@ extern "C" void app_main(void) {
 
   TEST_ASSERT(server.SetReadTimeout(PL::ModbusServer::defaultReadTimeout + 1) == ESP_OK);
   TEST_ASSERT_EQUAL(PL::ModbusServer::defaultReadTimeout + 1, server.GetReadTimeout());
+  TEST_ASSERT(server.SetWriteTimeout(PL::ModbusServer::defaultWriteTimeout + 1) == ESP_OK);
+  TEST_ASSERT_EQUAL(PL::ModbusServer::defaultWriteTimeout + 1, server.GetWriteTimeout());
   TEST_ASSERT(client.SetReadTimeout(PL::ModbusClient::defaultReadTimeout + 1) == ESP_OK);
   TEST_ASSERT_EQUAL(PL::ModbusClient::defaultReadTimeout + 1, client.GetReadTimeout());
+  TEST_ASSERT(client.SetWriteTimeout(PL::ModbusClient::defaultWriteTimeout + 1) == ESP_OK);
+  TEST_ASSERT_EQUAL(PL::ModbusClient::defaultWriteTimeout + 1, client.GetWriteTimeout());
 
   TEST_ASSERT(server.SetDelayAfterRead(1) == ESP_OK);
   TEST_ASSERT_EQUAL(1, server.GetDelayAfterRead());
