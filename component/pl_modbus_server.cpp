@@ -122,9 +122,37 @@ std::weak_ptr<Server> ModbusServer::GetBaseServer() {
 
 //==============================================================================
 
+esp_err_t ModbusServer::StreamRead(Stream& stream, void* dest, size_t size) {
+  for (size_t i = 0; i < size; i++) {
+    ESP_RETURN_ON_ERROR(stream.Read(dest ? (uint8_t*)dest + i : NULL, 1), TAG, "stream read failed");
+  }
+  return ESP_OK;
+}
+
+//==============================================================================
+
+esp_err_t ModbusServer::StreamRead(Stream& stream, Buffer& dest, size_t offset, size_t size) {
+  for (size_t i = 0; i < size; i++) {
+    ESP_RETURN_ON_ERROR(stream.Read(dest, offset + i, 1), TAG, "stream read failed");
+  }
+  return ESP_OK;
+}
+
+//==============================================================================
+
+esp_err_t ModbusServer::StreamReadUntil(Stream& stream, char termChar) {
+  uint8_t data;
+  do {
+    ESP_RETURN_ON_ERROR(stream.Read(&data, 1), TAG, "stream read failed");
+  } while (data != termChar);
+  return ESP_OK;
+}
+
+//==============================================================================
+
 esp_err_t ModbusServer::ReadRtuData(Stream& stream, ModbusFunctionCode functionCode, size_t& dataSize) {
   Buffer& dataBuffer = GetDataBuffer();
-  
+
   switch (functionCode) {
     case ModbusFunctionCode::readCoils:
     case ModbusFunctionCode::readDiscreteInputs:
@@ -134,11 +162,11 @@ esp_err_t ModbusServer::ReadRtuData(Stream& stream, ModbusFunctionCode functionC
     case ModbusFunctionCode::writeSingleHoldingRegister:
       dataSize = 4;
       if (dataBuffer.size >= dataSize) {
-        ESP_RETURN_ON_ERROR(stream.Read(dataBuffer, 0, dataSize), TAG, "read data failed");
+        ESP_RETURN_ON_ERROR(StreamRead(stream, dataBuffer, 0, dataSize), TAG, "read data failed");
         return ESP_OK;
       }
       else {
-        stream.Read(NULL, dataSize);
+        StreamRead(stream, NULL, dataSize);
         ESP_RETURN_ON_ERROR(ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
         return ESP_OK;
       }        
@@ -146,22 +174,22 @@ esp_err_t ModbusServer::ReadRtuData(Stream& stream, ModbusFunctionCode functionC
     case ModbusFunctionCode::writeMultipleCoils:
     case ModbusFunctionCode::writeMultipleHoldingRegisters:
       if (dataBuffer.size >= 5) {
-        ESP_RETURN_ON_ERROR(stream.Read(dataBuffer, 0, 5), TAG, "read header failed");
+        ESP_RETURN_ON_ERROR(StreamRead(stream, dataBuffer, 0, 5), TAG, "read header failed");
         dataSize = 5 + ((uint8_t*)dataBuffer.data)[4];
         if (dataBuffer.size >= dataSize) {
-          ESP_RETURN_ON_ERROR(stream.Read(dataBuffer, 5, dataSize - 5), TAG, "read data failed");
+          ESP_RETURN_ON_ERROR(StreamRead(stream, dataBuffer, 5, dataSize - 5), TAG, "read data failed");
           return ESP_OK;
         }
         else {
-          stream.Read(NULL, dataSize - 5);
+          StreamRead(stream, NULL, dataSize - 5);
           ESP_RETURN_ON_ERROR(ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
           return ESP_OK;       
         }
       }
       else {
         uint8_t byteSize;
-        if (stream.Read(NULL, 4) == ESP_OK && stream.Read(&byteSize, 1) == ESP_OK)
-          stream.Read(NULL, byteSize);
+        if (StreamRead(stream, NULL, 4) == ESP_OK && StreamRead(stream, &byteSize, 1) == ESP_OK)
+          StreamRead(stream, NULL, byteSize);
         ESP_RETURN_ON_ERROR(ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
         return ESP_OK;
       }

@@ -258,11 +258,11 @@ esp_err_t ModbusClient::ReadRtuData(Stream& stream, ModbusFunctionCode functionC
   if ((uint8_t)functionCode & 0x80) {
     dataSize = 1;
     if (dataBuffer.size >= 1) {
-      ESP_RETURN_ON_ERROR(stream.Read(dataBuffer, 0, 1), TAG, "read exception failed");
+      ESP_RETURN_ON_ERROR(StreamRead(stream, dataBuffer, 0, 1), TAG, "read exception failed");
       return ESP_OK;
     }
     else {
-      stream.Read(NULL, 1);
+      StreamRead(stream, NULL, 1);
       ESP_RETURN_ON_ERROR(ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
     }
   }
@@ -273,22 +273,22 @@ esp_err_t ModbusClient::ReadRtuData(Stream& stream, ModbusFunctionCode functionC
     case ModbusFunctionCode::readHoldingRegisters:
     case ModbusFunctionCode::readInputRegisters:
       if (dataBuffer.size >= 1) {
-        ESP_RETURN_ON_ERROR(stream.Read(dataBuffer, 0, 1), TAG, "read byte size failed");
+        ESP_RETURN_ON_ERROR(StreamRead(stream, dataBuffer, 0, 1), TAG, "read byte size failed");
         dataSize = 1 + ((uint8_t*)dataBuffer.data)[0];
         if (dataBuffer.size >= dataSize) {
-          ESP_RETURN_ON_ERROR(stream.Read(dataBuffer, 1, dataSize - 1), TAG, "read data failed");
+          ESP_RETURN_ON_ERROR(StreamRead(stream, dataBuffer, 1, dataSize - 1), TAG, "read data failed");
           return ESP_OK;
         }
         else {
-          stream.Read(NULL, dataSize - 1);
+          StreamRead(stream, NULL, dataSize - 1);
           ESP_RETURN_ON_ERROR(ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
           return ESP_OK;       
         }
       }
       else {
         uint8_t byteSize;
-        if (stream.Read(&byteSize, 1) == ESP_OK)
-          stream.Read(NULL, byteSize);
+        if (StreamRead(stream, &byteSize, 1) == ESP_OK)
+          StreamRead(stream, NULL, byteSize);
         ESP_RETURN_ON_ERROR(ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
         return ESP_OK;
       }
@@ -300,11 +300,11 @@ esp_err_t ModbusClient::ReadRtuData(Stream& stream, ModbusFunctionCode functionC
     case ModbusFunctionCode::writeMultipleHoldingRegisters:
       dataSize = 4;
       if (dataBuffer.size >= dataSize) {
-        ESP_RETURN_ON_ERROR(stream.Read(dataBuffer, 0, dataSize), TAG, "read data failed");
+        ESP_RETURN_ON_ERROR(StreamRead(stream, dataBuffer, 0, dataSize), TAG, "read data failed");
         return ESP_OK;
       }
       else {
-        stream.Read(NULL, dataSize);
+        StreamRead(stream, NULL, dataSize);
         ESP_RETURN_ON_ERROR(ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
         return ESP_OK;
       }
@@ -328,7 +328,7 @@ esp_err_t ModbusClient::Command(ModbusFunctionCode functionCode, size_t requestD
 
   Buffer& dataBuffer = GetDataBuffer();
 
-  stream.Read(NULL, stream.GetReadableSize());
+  StreamRead(stream, NULL, stream.GetReadableSize());
 
   transactionId++;
   ESP_RETURN_ON_ERROR(WriteFrame(stream, stationAddress, functionCode, requestDataSize, transactionId), TAG, "write frame failed");

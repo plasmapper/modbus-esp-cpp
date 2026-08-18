@@ -312,9 +312,9 @@ esp_err_t Server::ReadRtuData(PL::Stream& stream, PL::ModbusFunctionCode functio
   if (functionCode == userDefinedFunctionCode) {
     dataSize = sizeof(userDefinedFunctionRequest);
     if (dataBuffer.size >= dataSize)
-      return stream.Read(dataBuffer, 0, dataSize);
+      return StreamRead(stream, dataBuffer, 0, dataSize);
     else {
-      stream.Read(NULL, dataSize);
+      StreamRead(stream, NULL, dataSize);
       return ESP_ERR_INVALID_SIZE;
     }
   }
@@ -346,9 +346,9 @@ esp_err_t Client::ReadRtuData(PL::Stream& stream, PL::ModbusFunctionCode functio
   if (functionCode == userDefinedFunctionCode) {
     dataSize = sizeof(userDefinedFunctionResponse);
     if (dataBuffer.size >= dataSize)
-      return stream.Read(dataBuffer, 0, dataSize);
+      return StreamRead(stream, dataBuffer, 0, dataSize);
     else {
-      stream.Read(NULL, dataSize);
+      StreamRead(stream, NULL, dataSize);
       return ESP_ERR_INVALID_SIZE;
     }        
   }

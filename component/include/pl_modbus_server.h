@@ -14,7 +14,7 @@ public:
   /// @brief Default server name
   static const std::string defaultName; 
   /// @brief Default read operation timeout in FreeRTOS ticks
-  static constexpr TickType_t defaultReadTimeout = 2;
+  static constexpr TickType_t defaultReadTimeout = 3;
   /// @brief Default write operation timeout in FreeRTOS ticks
   static constexpr TickType_t defaultWriteTimeout = 300 / portTICK_PERIOD_MS;
 
@@ -80,6 +80,9 @@ public:
   std::weak_ptr<Server> GetBaseServer();
 
 protected:
+  esp_err_t StreamRead(Stream& stream, void* dest, size_t size) override;
+  esp_err_t StreamRead(Stream& stream, Buffer& dest, size_t offset, size_t size) override;
+  esp_err_t StreamReadUntil(Stream& stream, char termChar) override;
   esp_err_t ReadRtuData(Stream& stream, ModbusFunctionCode functionCode, size_t& dataSize) override;
   
   /// @brief Handles the Modbus client request

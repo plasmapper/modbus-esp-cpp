@@ -86,8 +86,29 @@ protected:
   /// @param transactionId frame transaction ID (for Modbus TCP protocol)
   /// @return error code
   esp_err_t WriteFrame(Stream& stream, uint8_t stationAddress, ModbusFunctionCode functionCode, size_t dataSize, uint16_t transactionId);
+
+  /// @brief Reads data from the stream (overriden in ModbusServer to read one byte at a time)
+  /// @param stream stream to read from
+  /// @param dest destination (can be NULL)
+  /// @param size number of bytes to read
+  /// @return error code
+  virtual esp_err_t StreamRead(Stream& stream, void* dest, size_t size);
   
-  /// @brief Reads the data for the specified function code (for Modbus RTU protocol).
+  /// @brief Reads data from the stream into the buffer (overriden in ModbusServer to read one byte at a time)
+  /// @param stream stream to read from
+  /// @param dest destination buffer
+  /// @param offset destination buffer offset
+  /// @param size number of bytes to read
+  /// @return error code
+  virtual esp_err_t StreamRead(Stream& stream, Buffer& dest, size_t offset, size_t size);
+
+  /// @brief Reads the data from the stream up to the specified termination character (overriden in ModbusServer to read one byte at a time)
+  /// @param stream stream to read from
+  /// @param termChar termination character
+  /// @return error code
+  virtual esp_err_t StreamReadUntil(Stream& stream, char termChar);
+
+  /// @brief Reads the data for the specified function code (for Modbus RTU protocol)
   /// @param stream stream to read from
   /// @param functionCode frame function code
   /// @param dataSize frame data size

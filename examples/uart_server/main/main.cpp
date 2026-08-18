@@ -17,7 +17,7 @@ extern "C" void app_main(void) {
   uart->SetStopBits(PL::UartStopBits::one);
   uart->SetFlowControl(PL::UartFlowControl::none);
   uart->Enable();
-  
+
   // Coils, digital inputs, holding registers and input registers all mapped to the same area.
   // 250 holding/input registers and 4000 coils/digital inputs).
   auto holdingRegisters = std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::holdingRegisters, 0, 500);
