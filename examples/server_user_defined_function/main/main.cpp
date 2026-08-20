@@ -43,8 +43,9 @@ extern "C" void app_main(void) {
 esp_err_t CustomModbusServer::ReadRtuData(PL::Stream& stream, PL::ModbusFunctionCode functionCode, size_t& dataSize) {
   if (functionCode == userDefinedFunctionCode) {
     PL::Buffer& dataBuffer = GetDataBuffer();
-    if (dataBuffer.size >= userDefinedFunctionRequestDataSize)
-      return stream.Read(dataBuffer, 0, userDefinedFunctionRequestDataSize);
+    dataSize = userDefinedFunctionRequestDataSize;
+    if (dataBuffer.size >= dataSize)
+      return stream.Read(dataBuffer, 0, dataSize);
     else {
       stream.Read(NULL, dataSize);
       return ESP_ERR_INVALID_SIZE;
