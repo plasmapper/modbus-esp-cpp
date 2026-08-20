@@ -9,6 +9,7 @@ public:
   const size_t userDefinedFunctionRequestDataSize = 1;
 
   using PL::ModbusServer::ModbusServer;
+  ~CustomModbusServer();
 
   esp_err_t ReadRtuData(PL::Stream& stream, PL::ModbusFunctionCode functionCode, size_t& dataSize) override;
   esp_err_t HandleRequest(PL::Stream& stream, uint8_t stationAddress, PL::ModbusFunctionCode functionCode, size_t dataSize, uint16_t transactionId) override;
@@ -36,6 +37,12 @@ extern "C" void app_main(void) {
   while (1) {
     vTaskDelay(1);
   }
+}
+
+//==============================================================================
+
+CustomModbusServer::~CustomModbusServer() {
+  StopTask();
 }
 
 //==============================================================================

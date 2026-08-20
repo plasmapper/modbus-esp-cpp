@@ -49,6 +49,18 @@ ModbusServer::ModbusServer(uint16_t port, size_t bufferSize) :
 
 //==============================================================================
 
+ModbusServer::~ModbusServer() {
+  StopTask();
+}
+
+//==============================================================================
+
+esp_err_t ModbusServer::StopTask() {
+  return interface == ModbusInterface::stream ? streamServer->StopTask() : tcpServer->StopTask();
+}
+
+//==============================================================================
+
 esp_err_t ModbusServer::Lock(TickType_t timeout) {
   return interface == ModbusInterface::stream ? streamServer->Lock(timeout) : tcpServer->Lock(timeout);
 }
@@ -488,6 +500,12 @@ ModbusServer::StreamServer::StreamServer(std::shared_ptr<Stream> stream, ModbusS
 
 //==============================================================================
 
+ModbusServer::StreamServer::~StreamServer() {
+  StopTask();
+}
+
+//==============================================================================
+
 esp_err_t ModbusServer::StreamServer::HandleRequest(Stream& stream) {
   return modbusServer.HandleRequest(stream);
 }
@@ -495,6 +513,12 @@ esp_err_t ModbusServer::StreamServer::HandleRequest(Stream& stream) {
 //==============================================================================
 
 ModbusServer::TcpServer::TcpServer(uint16_t port, ModbusServer& modbusServer) : PL::TcpServer(port), modbusServer(modbusServer) {}
+
+//==============================================================================
+
+ModbusServer::TcpServer::~TcpServer() {
+  StopTask();
+}
 
 //==============================================================================
 

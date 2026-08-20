@@ -42,6 +42,10 @@ public:
   /// @param bufferSize transaction buffer size
   ModbusServer(uint16_t port, size_t bufferSize = defaultBufferSize);
 
+  /// @note Every derived class must call StopTask as the first statement of its own destructor
+  /// so that the base server task does not call HandleRequest on a partially destroyed object.
+  ~ModbusServer();
+
   esp_err_t Lock(TickType_t timeout = portMAX_DELAY) override;
   esp_err_t Unlock() override;
 
@@ -80,6 +84,12 @@ public:
   std::weak_ptr<Server> GetBaseServer();
 
 protected:
+  /// @brief Stops the base server task and waits for it to exit
+  /// @note Must be called as the first statement of the destructor of every derived class
+  /// so that the base server task does not call HandleRequest on a partially destroyed object.
+  /// @return error code
+  esp_err_t StopTask();
+
   esp_err_t StreamRead(Stream& stream, void* dest, size_t size) override;
   esp_err_t StreamRead(Stream& stream, Buffer& dest, size_t offset, size_t size) override;
   esp_err_t StreamReadUntil(Stream& stream, char termChar) override;
@@ -106,7 +116,11 @@ protected:
 private:
   class StreamServer : public PL::StreamServer {
   public:
+    // Made accessible so that ModbusServer::StopTask can reach it.
+    using PL::StreamServer::StopTask;
+
     StreamServer(std::shared_ptr<Stream> stream, ModbusServer& modbusServer);
+    ~StreamServer();
     esp_err_t HandleRequest(Stream& stream) override;
   private:
     ModbusServer& modbusServer;
@@ -114,7 +128,11 @@ private:
 
   class TcpServer : public PL::TcpServer {
   public:
+    // Made accessible so that ModbusServer::StopTask can reach it.
+    using PL::TcpServer::StopTask;
+
     TcpServer(uint16_t port, ModbusServer& modbusServer);
+    ~TcpServer();
     esp_err_t HandleRequest(NetworkStream& stream) override;
   private:
     ModbusServer& modbusServer;

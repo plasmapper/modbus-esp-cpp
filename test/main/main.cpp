@@ -6,6 +6,7 @@
 class Server : public PL::ModbusServer {
 public:
   using PL::ModbusServer::ModbusServer;
+  ~Server();
 
   esp_err_t ReadRtuData(PL::Stream& stream, PL::ModbusFunctionCode functionCode, size_t& dataSize) override;
   esp_err_t HandleRequest(PL::Stream& stream, uint8_t stationAddress, PL::ModbusFunctionCode functionCode, size_t dataSize, uint16_t transactionId) override;
@@ -297,6 +298,12 @@ void TestUserDefinedFunctionCode() {
   TEST_ASSERT_EQUAL(sizeof(userDefinedFunctionResponse), responseDataSize);
   for (int i = 0; i < sizeof(userDefinedFunctionResponse) / sizeof(uint32_t); i++)
     TEST_ASSERT_EQUAL(userDefinedFunctionRequest, userDefinedFunctionResponse[i]);
+}
+
+//==============================================================================
+
+Server::~Server() {
+  StopTask();
 }
 
 //==============================================================================
