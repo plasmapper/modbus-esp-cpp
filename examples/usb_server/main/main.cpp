@@ -3,7 +3,7 @@
 
 //==============================================================================
 
-auto usbDevice = std::make_shared<PL::UsbDevice>(TINYUSB_USBDEV_0);
+auto usbDevice = std::make_shared<PL::UsbDevice>();
 auto usbDeviceCdc = std::make_shared<PL::UsbDeviceCdc>(usbDevice, TINYUSB_CDC_ACM_0);
 // Modbus server (port: USB, protocol: RTU, address: 1)
 PL::ModbusServer server(usbDeviceCdc, PL::ModbusProtocol::rtu, 1);
