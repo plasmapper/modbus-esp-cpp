@@ -546,6 +546,12 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream) {
     ESP_RETURN_ON_ERROR(HandleRequest(stream, stationAddress, functionCode, dataSize, transactionId), TAG, "handle request failed");
     return ESP_OK;
   }
+
+  if (error == ESP_ERR_INVALID_SIZE && GetProtocol() == ModbusProtocol::tcp) {
+    ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");
+    return ESP_OK;
+  }
+
   ESP_RETURN_ON_ERROR(error, TAG, "read frame error");
   return ESP_OK;
 }
