@@ -227,7 +227,8 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
   Buffer& dataBuffer = GetDataBuffer();
 
   if (functionCode == ModbusFunctionCode::readCoils || functionCode == ModbusFunctionCode::readDiscreteInputs) {
-    ESP_RETURN_ON_FALSE(stationAddress != 0, ESP_ERR_INVALID_RESPONSE, TAG, "read request with station address 0 is not supported");
+    if (stationAddress == 0)
+      return ESP_OK;
     if (dataSize != 4) {
       ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
@@ -279,7 +280,8 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream, uint8_t stationAddress, Mo
   }
 
   if (functionCode == ModbusFunctionCode::readHoldingRegisters || functionCode == ModbusFunctionCode::readInputRegisters) {
-    ESP_RETURN_ON_FALSE(stationAddress != 0, ESP_ERR_INVALID_RESPONSE, TAG, "read request with station address 0 is not supported");
+    if (stationAddress == 0)
+      return ESP_OK;
     if (dataSize != 4) {
       ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::illegalDataValue, transactionId), TAG, "write exception frame failed");
       return ESP_OK;
