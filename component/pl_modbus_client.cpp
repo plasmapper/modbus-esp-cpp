@@ -181,13 +181,13 @@ esp_err_t ModbusClient::WriteMultipleCoils(uint16_t address, uint16_t numberOfIt
 
     size_t responseDataSize;
     ESP_RETURN_ON_ERROR(Command(ModbusFunctionCode::writeMultipleCoils, memoryDataSize + 5, responseDataSize, exception), TAG, "command failed");
-    if (stationAddress == 0)
-      return ESP_OK;
-    ESP_RETURN_ON_FALSE(responseDataSize == 4, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response data size");
-    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
-    ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
-    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
-    ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.numberOfItems, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response number of items");
+    if (stationAddress != 0) {
+      ESP_RETURN_ON_FALSE(responseDataSize == 4, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response data size");
+      memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+      ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
+      memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+      ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.numberOfItems, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response number of items");
+    }
   }
   return ESP_OK;
 }
@@ -224,13 +224,13 @@ esp_err_t ModbusClient::WriteMultipleHoldingRegisters(uint16_t address, uint16_t
 
     size_t responseDataSize; 
     ESP_RETURN_ON_ERROR(Command(ModbusFunctionCode::writeMultipleHoldingRegisters, memoryDataSize + 5, responseDataSize, exception), TAG, "command failed");
-    if (stationAddress == 0)
-      return ESP_OK;
-    ESP_RETURN_ON_FALSE(responseDataSize == 4, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response data size");
-    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
-    ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
-    memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
-    ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.numberOfItems, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response number of items");
+    if (stationAddress != 0) {
+      ESP_RETURN_ON_FALSE(responseDataSize == 4, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response data size");
+      memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
+      ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
+      memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
+      ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == addressRange.numberOfItems, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response number of items");
+    }
   }
   return ESP_OK;
 }
@@ -247,6 +247,21 @@ uint8_t ModbusClient::GetStationAddress() {
 esp_err_t ModbusClient::SetStationAddress(uint8_t stationAddress) {
   LockGuard lg(*this);
   this->stationAddress = stationAddress;
+  return ESP_OK;
+}
+
+//==============================================================================
+
+TickType_t ModbusClient::GetBroadcastTurnaroundDelay() {
+  LockGuard lg(*this);
+  return broadcastTurnaroundDelay;
+}
+
+//==============================================================================
+
+esp_err_t ModbusClient::SetBroadcastTurnaroundDelay(TickType_t delay) {
+  LockGuard lg(*this);
+  broadcastTurnaroundDelay = delay;
   return ESP_OK;
 }
 
@@ -332,8 +347,10 @@ esp_err_t ModbusClient::Command(ModbusFunctionCode functionCode, size_t requestD
 
   transactionId++;
   ESP_RETURN_ON_ERROR(WriteFrame(stream, stationAddress, functionCode, requestDataSize, transactionId), TAG, "write frame failed");
-  if (stationAddress == 0)
+  if (stationAddress == 0) {
+    vTaskDelay(broadcastTurnaroundDelay);
     return ESP_OK;
+  }
 
   uint8_t responseStationAddress;
   ModbusFunctionCode responseFunctionCode;

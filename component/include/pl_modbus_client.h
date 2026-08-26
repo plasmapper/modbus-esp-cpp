@@ -14,6 +14,9 @@ public:
   static constexpr TickType_t defaultReadTimeout = 300 / portTICK_PERIOD_MS;
   /// @brief Default write operation timeout in FreeRTOS ticks
   static constexpr TickType_t defaultWriteTimeout = 300 / portTICK_PERIOD_MS;
+  /// @brief Default delay after a broadcast request, giving the addressed servers time to
+  /// process it before the next request is sent
+  static constexpr TickType_t defaultBroadcastTurnaroundDelay = 100 / portTICK_PERIOD_MS;
 
   /// @brief Creates a stream Modbus client
   /// @param stream stream
@@ -124,6 +127,15 @@ public:
   /// @return error code
   esp_err_t SetStationAddress(uint8_t address);
 
+  /// @brief Gets the delay after a broadcast request
+  /// @return delay in FreeRTOS ticks
+  TickType_t GetBroadcastTurnaroundDelay();
+
+  /// @brief Sets the delay after a broadcast request
+  /// @param delay delay in FreeRTOS ticks
+  /// @return error code
+  esp_err_t SetBroadcastTurnaroundDelay(TickType_t delay);
+
 protected:
   esp_err_t ReadRtuData(Stream& stream, ModbusFunctionCode functionCode, size_t& dataSize) override;
 
@@ -135,6 +147,7 @@ private:
   uint8_t stationAddress;
   std::shared_ptr<Buffer> buffer;
   uint16_t transactionId = 0;
+  TickType_t broadcastTurnaroundDelay = defaultBroadcastTurnaroundDelay;
   
   esp_err_t Command(ModbusFunctionCode functionCode, size_t requestDataSize, size_t& responseDataSize, ModbusException* exception);
   esp_err_t ReadBits(ModbusFunctionCode functionCode, uint16_t address, uint16_t numberOfItems, void* responseData, ModbusException* exception);

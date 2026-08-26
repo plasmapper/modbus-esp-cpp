@@ -38,6 +38,7 @@ const size_t numberOfRegisters = 250;
 const size_t numberOfBits = numberOfRegisters * 16;
 auto serverHR = std::make_shared<PL::ModbusMemoryArea>(PL::ModbusMemoryType::holdingRegisters, 0, numberOfRegisters * 2);
 const size_t numberOfIterations = 100;
+const size_t numberOfBroadcastIterations = 10;
 
 const PL::ModbusFunctionCode userDefinedFunctionCode = (PL::ModbusFunctionCode)100;
 uint32_t userDefinedFunctionRequest;
@@ -54,6 +55,8 @@ void TestWriteSingleCoil();
 void TestWriteSingleHoldingRegister();
 void TestWriteMultipleCoils();
 void TestWriteMultipleHoldingRegisters();
+void TestWriteMultipleCoilsBroadcast();
+void TestWriteMultipleHoldingRegistersBroadcast();
 void TestUserDefinedFunctionCode();
 
 //==============================================================================
@@ -70,6 +73,7 @@ extern "C" void app_main(void) {
   TEST_ASSERT_EQUAL(PL::ModbusServer::defaultWriteTimeout, server.GetWriteTimeout());
   TEST_ASSERT_EQUAL(PL::ModbusClient::defaultReadTimeout, client.GetReadTimeout());
   TEST_ASSERT_EQUAL(PL::ModbusClient::defaultWriteTimeout, client.GetWriteTimeout());
+  TEST_ASSERT_EQUAL(PL::ModbusClient::defaultBroadcastTurnaroundDelay, client.GetBroadcastTurnaroundDelay());
   TEST_ASSERT_EQUAL(0, server.GetDelayAfterRead());
   TEST_ASSERT_EQUAL(0, client.GetDelayAfterRead());
 
@@ -86,6 +90,8 @@ extern "C" void app_main(void) {
   TEST_ASSERT_EQUAL(PL::ModbusClient::defaultReadTimeout + 1, client.GetReadTimeout());
   TEST_ASSERT(client.SetWriteTimeout(PL::ModbusClient::defaultWriteTimeout + 1) == ESP_OK);
   TEST_ASSERT_EQUAL(PL::ModbusClient::defaultWriteTimeout + 1, client.GetWriteTimeout());
+  TEST_ASSERT(client.SetBroadcastTurnaroundDelay(PL::ModbusClient::defaultBroadcastTurnaroundDelay + 1) == ESP_OK);
+  TEST_ASSERT_EQUAL(PL::ModbusClient::defaultBroadcastTurnaroundDelay + 1, client.GetBroadcastTurnaroundDelay());
 
   TEST_ASSERT(server.SetDelayAfterRead(1) == ESP_OK);
   TEST_ASSERT_EQUAL(1, server.GetDelayAfterRead());
@@ -118,6 +124,8 @@ extern "C" void app_main(void) {
     RUN_TEST(TestWriteSingleHoldingRegister);
     RUN_TEST(TestWriteMultipleCoils);
     RUN_TEST(TestWriteMultipleHoldingRegisters);
+    RUN_TEST(TestWriteMultipleCoilsBroadcast);
+    RUN_TEST(TestWriteMultipleHoldingRegistersBroadcast);
     RUN_TEST(TestUserDefinedFunctionCode);
   }
 
@@ -286,6 +294,38 @@ void TestWriteMultipleHoldingRegisters() {
       TEST_ASSERT_EQUAL(src[j], ((uint16_t*)serverHR->data)[testAddress + j]);
     }
     delete[] src;
+  }
+}
+
+//==============================================================================
+
+void TestWriteMultipleCoilsBroadcast() {
+  for (int i = 0; i < numberOfBroadcastIterations; i++) {
+    TEST_ASSERT(client.SetStationAddress(0) == ESP_OK);
+    uint8_t* src = new uint8_t[(numberOfBits - 1) / 8 + 1];
+    esp_fill_random(src, (numberOfBits - 1) / 8 + 1);
+    TEST_ASSERT(client.WriteMultipleCoils(0, numberOfBits, src, NULL) == ESP_OK);
+    for (int j = 0; j < numberOfBits; j++) {
+      TEST_ASSERT_EQUAL((src[j / 8] >> (j % 8)) & 1, (((uint8_t*)serverHR->data)[j / 8] >> (j % 8)) & 1);
+    }
+    delete[] src;
+    TEST_ASSERT(client.SetStationAddress(stationAddress) == ESP_OK);
+  }
+}
+
+//==============================================================================
+
+void TestWriteMultipleHoldingRegistersBroadcast() {
+  for (int i = 0; i < numberOfBroadcastIterations; i++) {
+    TEST_ASSERT(client.SetStationAddress(0) == ESP_OK);
+    uint16_t* src = new uint16_t[numberOfRegisters * 2];
+    esp_fill_random(src, numberOfRegisters * 2);
+    TEST_ASSERT(client.WriteMultipleHoldingRegisters(0, numberOfRegisters, src, NULL) == ESP_OK);
+    for (int j = 0; j < numberOfRegisters; j++) {
+      TEST_ASSERT_EQUAL(src[j], ((uint16_t*)serverHR->data)[j]);
+    }
+    delete[] src;
+    TEST_ASSERT(client.SetStationAddress(stationAddress) == ESP_OK);
   }
 }
 
