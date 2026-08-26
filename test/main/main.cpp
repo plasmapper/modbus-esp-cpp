@@ -57,6 +57,8 @@ void TestWriteMultipleCoils();
 void TestWriteMultipleHoldingRegisters();
 void TestWriteMultipleCoilsBroadcast();
 void TestWriteMultipleHoldingRegistersBroadcast();
+void TestWriteMultipleCoilsBroadcastNoDelay();
+void TestWriteMultipleHoldingRegistersBroadcastNoDelay();
 void TestUserDefinedFunctionCode();
 
 //==============================================================================
@@ -126,6 +128,8 @@ extern "C" void app_main(void) {
     RUN_TEST(TestWriteMultipleHoldingRegisters);
     RUN_TEST(TestWriteMultipleCoilsBroadcast);
     RUN_TEST(TestWriteMultipleHoldingRegistersBroadcast);
+    RUN_TEST(TestWriteMultipleCoilsBroadcastNoDelay);
+    RUN_TEST(TestWriteMultipleHoldingRegistersBroadcastNoDelay);
     RUN_TEST(TestUserDefinedFunctionCode);
   }
 
@@ -327,6 +331,44 @@ void TestWriteMultipleHoldingRegistersBroadcast() {
     delete[] src;
     TEST_ASSERT(client.SetStationAddress(stationAddress) == ESP_OK);
   }
+}
+
+//==============================================================================
+
+void TestWriteMultipleCoilsBroadcastNoDelay() {
+  TEST_ASSERT(client.SetBroadcastTurnaroundDelay(0) == ESP_OK);
+  for (int i = 0; i < numberOfBroadcastIterations; i++) {
+    TEST_ASSERT(client.SetStationAddress(0) == ESP_OK);
+    uint8_t* src = new uint8_t[(numberOfBits - 1) / 8 + 1];
+    esp_fill_random(src, (numberOfBits - 1) / 8 + 1);
+    TEST_ASSERT(client.WriteMultipleCoils(0, numberOfBits, src, NULL) == ESP_OK);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    for (int j = 0; j < numberOfBits; j++) {
+      TEST_ASSERT_EQUAL((src[j / 8] >> (j % 8)) & 1, (((uint8_t*)serverHR->data)[j / 8] >> (j % 8)) & 1);
+    }
+    delete[] src;
+    TEST_ASSERT(client.SetStationAddress(stationAddress) == ESP_OK);
+  }
+  TEST_ASSERT(client.SetBroadcastTurnaroundDelay(PL::ModbusClient::defaultBroadcastTurnaroundDelay) == ESP_OK);
+}
+
+//==============================================================================
+
+void TestWriteMultipleHoldingRegistersBroadcastNoDelay() {
+  TEST_ASSERT(client.SetBroadcastTurnaroundDelay(0) == ESP_OK);
+  for (int i = 0; i < numberOfBroadcastIterations; i++) {
+    TEST_ASSERT(client.SetStationAddress(0) == ESP_OK);
+    uint16_t* src = new uint16_t[numberOfRegisters * 2];
+    esp_fill_random(src, numberOfRegisters * 2);
+    TEST_ASSERT(client.WriteMultipleHoldingRegisters(0, numberOfRegisters, src, NULL) == ESP_OK);
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+    for (int j = 0; j < numberOfRegisters; j++) {
+      TEST_ASSERT_EQUAL(src[j], ((uint16_t*)serverHR->data)[j]);
+    }
+    delete[] src;
+    TEST_ASSERT(client.SetStationAddress(stationAddress) == ESP_OK);
+  }
+  TEST_ASSERT(client.SetBroadcastTurnaroundDelay(PL::ModbusClient::defaultBroadcastTurnaroundDelay) == ESP_OK);
 }
 
 //==============================================================================

@@ -537,7 +537,7 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream) {
   esp_err_t error;
   do {
     error = ReadFrame(stream, stationAddress, functionCode, dataSize, transactionId);
-  } while (stream.GetReadableSize() && GetProtocol() != ModbusProtocol::tcp);
+  } while (!(error == ESP_OK && stationAddress == 0) && stream.GetReadableSize() && GetProtocol() != ModbusProtocol::tcp);
 
   if ((error == ESP_OK || error == ESP_ERR_INVALID_SIZE) && stationAddress != this->stationAddress && stationAddress != 0)
     return ESP_OK;
