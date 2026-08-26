@@ -52,6 +52,10 @@ public:
   esp_err_t Enable() override;
   esp_err_t Disable() override;
 
+  /// @note Returns an error if called from HandleRequest, since changing the protocol mid-transaction
+  /// would desynchronize the data buffer written by HandleRequest from the one WriteFrame sends.
+  esp_err_t SetProtocol(ModbusProtocol protocol) override;
+
   /// @brief Adds a Modbus memory area to the server
   /// @param memoryArea memory area
   /// @return error code
@@ -87,6 +91,7 @@ protected:
   /// @brief Stops the base server task and waits for it to exit
   /// @note Must be called as the first statement of the destructor of every derived class
   /// so that the base server task does not call HandleRequest on a partially destroyed object.
+  /// Aborts if called from the HandleRequest, since it cannot wait for its own task to exit.
   /// @return error code
   esp_err_t StopTask();
 
@@ -143,6 +148,7 @@ private:
   std::shared_ptr<TcpServer> tcpServer;
   uint8_t stationAddress;
   std::vector<std::shared_ptr<ModbusMemoryArea>> memoryAreas;
+  bool handlingRequest = false;
 
   esp_err_t HandleRequest(Stream& stream);
   std::shared_ptr<ModbusMemoryArea> FindMemoryArea(ModbusMemoryType memoryType, uint16_t memoryAddress, uint16_t numberOfItems);

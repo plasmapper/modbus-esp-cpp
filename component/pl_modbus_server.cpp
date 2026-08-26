@@ -85,6 +85,13 @@ esp_err_t ModbusServer::Disable() {
 
 //==============================================================================
 
+esp_err_t ModbusServer::SetProtocol(ModbusProtocol protocol) {
+  ESP_RETURN_ON_FALSE(!handlingRequest, ESP_ERR_INVALID_STATE, TAG, "set protocol called from HandleRequest");
+  return ModbusBase::SetProtocol(protocol);
+}
+
+//==============================================================================
+
 void ModbusServer::AddMemoryArea(std::shared_ptr<ModbusMemoryArea> memoryArea) {
   LockGuard lg(*this);
   memoryAreas.push_back(memoryArea);
@@ -534,18 +541,24 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream) {
   size_t dataSize;
   uint16_t transactionId;
 
+  handlingRequest = true;
   esp_err_t error;
   do {
     error = ReadFrame(stream, stationAddress, functionCode, dataSize, transactionId);
   } while (!(error == ESP_OK && stationAddress == 0) && stream.GetReadableSize() && GetProtocol() != ModbusProtocol::tcp);
 
-  if ((error == ESP_OK || error == ESP_ERR_INVALID_SIZE) && stationAddress != this->stationAddress && stationAddress != 0)
-    return ESP_OK;
-
-  if (error == ESP_OK) {
-    ESP_RETURN_ON_ERROR(HandleRequest(stream, stationAddress, functionCode, dataSize, transactionId), TAG, "handle request failed");
+  if ((error == ESP_OK || error == ESP_ERR_INVALID_SIZE) && stationAddress != this->stationAddress && stationAddress != 0) {
+    handlingRequest = false;
     return ESP_OK;
   }
+
+  if (error == ESP_OK) {
+    error = HandleRequest(stream, stationAddress, functionCode, dataSize, transactionId);
+    handlingRequest = false;
+    ESP_RETURN_ON_ERROR(error, TAG, "handle request failed");
+    return ESP_OK;
+  }
+  handlingRequest = false;
 
   if (error == ESP_ERR_INVALID_SIZE && GetProtocol() == ModbusProtocol::tcp) {
     ESP_RETURN_ON_ERROR(WriteExceptionFrame(stream, stationAddress, functionCode, ModbusException::serverDeviceFailure, transactionId), TAG, "write exception frame failed");

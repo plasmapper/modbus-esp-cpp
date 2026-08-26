@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ModbusServer not sending an exception response for an oversized TCP request.
 - Endianness inconsistencies.
 - GetDataBuffer returning a reference that SetProtocol could invalidate.
+- SetProtocol allowing a protocol change from within HandleRequest.
 
 ## [1.4.1] - 2026-08-20
 ### Changed
