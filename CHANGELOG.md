@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Broadcast commands.
 - ModbusServer discarding queued broadcast requests instead of processing each one.
 - ModbusServer not sending an exception response for an oversized TCP request.
+- Endianness inconsistencies.
 
 ## [1.4.1] - 2026-08-20
 ### Changed

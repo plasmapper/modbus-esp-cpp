@@ -114,8 +114,8 @@ esp_err_t ModbusClient::WriteSingleCoil(uint16_t address, bool value, ModbusExce
   ESP_RETURN_ON_FALSE(dataBuffer.size >= 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
   uint16_t tempUInt16;
   memcpy((uint8_t*)dataBuffer.data + 0, &(tempUInt16 = __builtin_bswap16(address)), 2);
-  uint16_t u16Value = value ? 0x00FF : 0;
-  memcpy((uint8_t*)dataBuffer.data + 2, &(tempUInt16 = u16Value), 2);
+  uint16_t u16Value = value ? 0xFF00 : 0;
+  memcpy((uint8_t*)dataBuffer.data + 2, &(tempUInt16 = __builtin_bswap16(u16Value)), 2);
 
   size_t responseDataSize;
   ESP_RETURN_ON_ERROR(Command(ModbusFunctionCode::writeSingleCoil, 4, responseDataSize, exception), TAG, "command failed");
@@ -125,7 +125,7 @@ esp_err_t ModbusClient::WriteSingleCoil(uint16_t address, bool value, ModbusExce
   memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 0, 2);
   ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == address, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory address");
   memcpy(&tempUInt16, (uint8_t*)dataBuffer.data + 2, 2);
-  ESP_RETURN_ON_FALSE(tempUInt16 == u16Value, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory value");
+  ESP_RETURN_ON_FALSE(__builtin_bswap16(tempUInt16) == u16Value, ESP_ERR_INVALID_RESPONSE, TAG, "invalid response memory value");
   return ESP_OK;
 }
 

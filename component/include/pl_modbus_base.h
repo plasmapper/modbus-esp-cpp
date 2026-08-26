@@ -5,6 +5,12 @@
 
 //==============================================================================
 
+// Multi-byte Modbus fields are read/written without accounting for host byte order,
+// relying on the target being little-endian (true for every ESP32 variant).
+static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__, "Modbus frame handling assumes a little-endian host");
+
+//==============================================================================
+
 namespace PL {
 
 //==============================================================================
