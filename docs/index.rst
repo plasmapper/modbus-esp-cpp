@@ -53,6 +53,7 @@ The network :cpp:class:`PL::ModbusClient` locks both the :cpp:class:`PL::ModbusC
 
 The stream :cpp:class:`PL::ModbusServer` task method locks both the underlying :cpp:class:`PL::StreamServer` and the :cpp:class:`PL::Stream` objects for the duration of the transaction.
 The network :cpp:class:`PL::ModbusServer` task method locks both the underlying :cpp:class:`PL::TcpServer` and the client :cpp:class:`PL::NetworkStream` objects for the duration of the transaction.
+The :cpp:class:`PL::ModbusServer` task method also locks the transaction buffer for the duration of the transaction.
 The default :cpp:func:`PL::ModbusServer::HandleRequest` locks the accessed :cpp:class:`PL::ModbusMemoryArea` for the duration of the transaction.
 
 Examples

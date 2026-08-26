@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Endianness inconsistencies.
 - GetDataBuffer returning a reference that SetProtocol could invalidate.
 - SetProtocol allowing a protocol change from within HandleRequest.
+- ModbusServer not locking the transaction buffer while handling a request.
 
 ## [1.4.1] - 2026-08-20
 ### Changed

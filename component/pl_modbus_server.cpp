@@ -86,6 +86,7 @@ esp_err_t ModbusServer::Disable() {
 //==============================================================================
 
 esp_err_t ModbusServer::SetProtocol(ModbusProtocol protocol) {
+  LockGuard lg(*this);
   ESP_RETURN_ON_FALSE(!handlingRequest, ESP_ERR_INVALID_STATE, TAG, "set protocol called from HandleRequest");
   return ModbusBase::SetProtocol(protocol);
 }
@@ -542,6 +543,9 @@ esp_err_t ModbusServer::HandleRequest(Stream& stream) {
   uint16_t transactionId;
 
   handlingRequest = true;
+  // The server itself and stream are already locked by the base server (StreamServer/TcpServer) task code
+  LockGuard lgBuffer(GetDataBuffer());
+
   esp_err_t error;
   do {
     error = ReadFrame(stream, stationAddress, functionCode, dataSize, transactionId);
