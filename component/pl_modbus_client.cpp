@@ -166,6 +166,7 @@ esp_err_t ModbusClient::WriteMultipleCoils(uint16_t address, uint16_t numberOfIt
     *exception = ModbusException::noException;
   ESP_RETURN_ON_FALSE(requestData, ESP_ERR_INVALID_ARG, TAG, "requestData is null");
   ESP_RETURN_ON_FALSE(numberOfItems > 0, ESP_ERR_INVALID_ARG, TAG, "invalid number of items");
+  ESP_RETURN_ON_FALSE((uint32_t)address + numberOfItems <= 0x10000, ESP_ERR_INVALID_ARG, TAG, "invalid address range");
 
   for (auto& addressRange : SplitAddressRange(address, numberOfItems, maxNumberOfModbusBitsToWrite)) {
     size_t memoryDataSize = (addressRange.numberOfItems - 1) / 8 + 1;
@@ -202,6 +203,7 @@ esp_err_t ModbusClient::WriteMultipleHoldingRegisters(uint16_t address, uint16_t
     *exception = ModbusException::noException;
   ESP_RETURN_ON_FALSE(requestData, ESP_ERR_INVALID_ARG, TAG, "requestData is null");
   ESP_RETURN_ON_FALSE(numberOfItems > 0, ESP_ERR_INVALID_ARG, TAG, "invalid number of items");
+  ESP_RETURN_ON_FALSE((uint32_t)address + numberOfItems <= 0x10000, ESP_ERR_INVALID_ARG, TAG, "invalid address range");
 
   for (auto& addressRange : SplitAddressRange(address, numberOfItems, maxNumberOfModbusRegistersToWrite)) {
     size_t memoryDataSize = addressRange.numberOfItems * 2;
@@ -386,6 +388,7 @@ esp_err_t ModbusClient::ReadBits(ModbusFunctionCode functionCode, uint16_t addre
     *exception = ModbusException::noException;
   ESP_RETURN_ON_FALSE(stationAddress != 0, ESP_ERR_INVALID_ARG, TAG, "invalid station address");
   ESP_RETURN_ON_FALSE(numberOfItems > 0, ESP_ERR_INVALID_ARG, TAG, "invalid number of items");
+  ESP_RETURN_ON_FALSE((uint32_t)address + numberOfItems <= 0x10000, ESP_ERR_INVALID_ARG, TAG, "invalid address range");
   ESP_RETURN_ON_FALSE(dataBuffer.size >= 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
 
   for (auto& addressRange : SplitAddressRange(address, numberOfItems, maxNumberOfModbusBitsToRead)) {
@@ -414,6 +417,7 @@ esp_err_t ModbusClient::ReadRegisters(ModbusFunctionCode functionCode, uint16_t 
     *exception = ModbusException::noException;
   ESP_RETURN_ON_FALSE(stationAddress != 0, ESP_ERR_INVALID_ARG, TAG, "invalid station address");
   ESP_RETURN_ON_FALSE(numberOfItems > 0, ESP_ERR_INVALID_ARG, TAG, "invalid number of items");
+  ESP_RETURN_ON_FALSE((uint32_t)address + numberOfItems <= 0x10000, ESP_ERR_INVALID_ARG, TAG, "invalid address range");
   ESP_RETURN_ON_FALSE(dataBuffer.size >= 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
 
   for (auto& addressRange : SplitAddressRange(address, numberOfItems, maxNumberOfModbusRegistersToRead)) {

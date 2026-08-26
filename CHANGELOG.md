@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.4.2] - 2026-08-26
 ### Fixed
 - ModbusServer base server task not being stopped before the derived object is destroyed.
 - Broadcast commands.
@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SetProtocol allowing a protocol change from within HandleRequest.
 - ModbusServer not locking the transaction buffer while handling a request.
 - ModbusServer logging and returning an error for a read request with station address 0 instead of ignoring it.
+- ModbusClient silently clamping a read/write request whose address range wraps past 0xFFFF.
 
 ## [1.4.1] - 2026-08-20
 ### Changed

@@ -147,6 +147,16 @@ void TestErrors() {
   TEST_ASSERT(client.SetStationAddress(stationAddress) == ESP_OK);
 
   PL::ModbusException exception;
+  uint16_t testValue;
+  uint16_t testData[] = {0, 0x1111};
+
+  TEST_ASSERT(client.ReadCoils(0xFFFF, 2, NULL, NULL) == ESP_ERR_INVALID_ARG);
+  TEST_ASSERT(client.ReadDiscreteInputs(0xFFFF, 2, NULL, NULL) == ESP_ERR_INVALID_ARG);
+  TEST_ASSERT(client.ReadHoldingRegisters(0xFFFF, 2, NULL, NULL) == ESP_ERR_INVALID_ARG);
+  TEST_ASSERT(client.ReadInputRegisters(0xFFFF, 2, NULL, NULL) == ESP_ERR_INVALID_ARG);
+  TEST_ASSERT(client.WriteMultipleCoils(0xFFFF, 2, &testValue, NULL) == ESP_ERR_INVALID_ARG);
+  TEST_ASSERT(client.WriteMultipleHoldingRegisters(0xFFFF, 2, &testValue, NULL) == ESP_ERR_INVALID_ARG);
+
   TEST_ASSERT(client.Command(PL::ModbusFunctionCode::unknown, NULL, 0, NULL, 0, NULL, &exception) == ESP_FAIL);
   TEST_ASSERT_EQUAL(PL::ModbusException::illegalFunction, exception);
   TEST_ASSERT(client.ReadCoils(numberOfBits, 1, NULL, &exception) == ESP_FAIL);
@@ -161,12 +171,10 @@ void TestErrors() {
   TEST_ASSERT_EQUAL(PL::ModbusException::illegalDataAddress, exception);
   TEST_ASSERT(client.WriteSingleHoldingRegister(numberOfRegisters, false, &exception) == ESP_FAIL);
   TEST_ASSERT_EQUAL(PL::ModbusException::illegalDataAddress, exception);
-  uint16_t testValue;
   TEST_ASSERT(client.WriteMultipleCoils(numberOfBits, 1, &testValue, &exception) == ESP_FAIL);
   TEST_ASSERT_EQUAL(PL::ModbusException::illegalDataAddress, exception);
   TEST_ASSERT(client.WriteMultipleHoldingRegisters(numberOfRegisters, 1, &testValue, &exception) == ESP_FAIL);
   TEST_ASSERT_EQUAL(PL::ModbusException::illegalDataAddress, exception);
-  uint16_t testData[] = {0, 0x1111};
   TEST_ASSERT(client.Command(PL::ModbusFunctionCode::writeSingleCoil, testData, sizeof(testData), NULL, 0, NULL, &exception) == ESP_FAIL);
   TEST_ASSERT_EQUAL(PL::ModbusException::illegalDataValue, exception);
 }
@@ -342,7 +350,7 @@ void TestWriteMultipleCoilsBroadcastNoDelay() {
     uint8_t* src = new uint8_t[(numberOfBits - 1) / 8 + 1];
     esp_fill_random(src, (numberOfBits - 1) / 8 + 1);
     TEST_ASSERT(client.WriteMultipleCoils(0, numberOfBits, src, NULL) == ESP_OK);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
     for (int j = 0; j < numberOfBits; j++) {
       TEST_ASSERT_EQUAL((src[j / 8] >> (j % 8)) & 1, (((uint8_t*)serverHR->data)[j / 8] >> (j % 8)) & 1);
     }
@@ -361,7 +369,7 @@ void TestWriteMultipleHoldingRegistersBroadcastNoDelay() {
     uint16_t* src = new uint16_t[numberOfRegisters * 2];
     esp_fill_random(src, numberOfRegisters * 2);
     TEST_ASSERT(client.WriteMultipleHoldingRegisters(0, numberOfRegisters, src, NULL) == ESP_OK);
-    vTaskDelay(100 / portTICK_PERIOD_MS);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
     for (int j = 0; j < numberOfRegisters; j++) {
       TEST_ASSERT_EQUAL(src[j], ((uint16_t*)serverHR->data)[j]);
     }
