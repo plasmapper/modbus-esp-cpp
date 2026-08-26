@@ -59,7 +59,6 @@ esp_err_t ModbusBase::SetProtocol(ModbusProtocol protocol) {
   LockGuard lg(*this);
   ESP_RETURN_ON_FALSE(protocol == ModbusProtocol::rtu || protocol == ModbusProtocol::ascii || protocol == ModbusProtocol::tcp, ESP_ERR_INVALID_ARG, TAG, "invalid protocol");
   this->protocol = protocol;
-  InitializeDataBuffer();
   return ESP_OK;
 }
 
@@ -111,10 +110,13 @@ esp_err_t ModbusBase::SetDelayAfterRead(TickType_t delay) {
 //==============================================================================
 
 ModbusBase::ModbusBase(ModbusProtocol protocol, std::shared_ptr<Buffer> buffer, TickType_t readTimeout, TickType_t writeTimeout) :
-    protocol(protocol), buffer(buffer), readTimeout(readTimeout), writeTimeout(writeTimeout) {
+    protocol(protocol), buffer(buffer),
+    rtuDataBuffer((uint8_t*)buffer->data + 2, buffer->size >= 4 ? (buffer->size - 4) : 0, buffer),
+    asciiDataBuffer((uint8_t*)buffer->data + 2, buffer->size >= 9 ? ((buffer->size - 9) / 2) : 0, buffer),
+    tcpDataBuffer((uint8_t*)buffer->data + 8, buffer->size >= 8 ? (buffer->size - 8) : 0, buffer),
+    readTimeout(readTimeout), writeTimeout(writeTimeout) {
   if (protocol != ModbusProtocol::rtu && protocol != ModbusProtocol::ascii && protocol != ModbusProtocol::tcp)
     this->protocol = ModbusProtocol::rtu;
-  InitializeDataBuffer();
 }
 
 //==============================================================================
@@ -307,7 +309,11 @@ esp_err_t ModbusBase::StreamReadUntil(Stream& stream, char termChar) {
 //==============================================================================
 
 Buffer& ModbusBase::GetDataBuffer() {
-  return *dataBuffer;
+  if (protocol == ModbusProtocol::rtu)
+    return rtuDataBuffer;
+  if (protocol == ModbusProtocol::ascii)
+    return asciiDataBuffer;
+  return tcpDataBuffer;
 }
 
 //==============================================================================
@@ -330,17 +336,6 @@ uint8_t ModbusBase::Lrc(size_t size) {
   for (size_t i = 0; i < size; i++)
     lrc += ((uint8_t*)buffer->data)[i];
   return ~lrc + 1;
-}
-
-//==============================================================================
-
-void ModbusBase::InitializeDataBuffer() {
-  if (protocol == ModbusProtocol::rtu)
-    dataBuffer = std::make_shared<Buffer>((uint8_t*)buffer->data + 2, buffer->size >= 4 ? (buffer->size - 4) : 0, buffer);
-  if (protocol == ModbusProtocol::ascii)
-    dataBuffer = std::make_shared<Buffer>((uint8_t*)buffer->data + 2, buffer->size >= 9 ? ((buffer->size - 9) / 2) : 0, buffer);
-  if (protocol == ModbusProtocol::tcp)
-    dataBuffer = std::make_shared<Buffer>((uint8_t*)buffer->data + 8, buffer->size >= 8 ? (buffer->size - 8) : 0, buffer);
 }
 
 //==============================================================================

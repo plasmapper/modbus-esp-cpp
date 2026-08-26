@@ -128,14 +128,16 @@ protected:
 private:
   ModbusProtocol protocol;
   std::shared_ptr<Buffer> buffer;
-  std::shared_ptr<Buffer> dataBuffer;
+  // RTU, ASCII and TCP data buffers point to the valid areas of buffer for the corresponding protocols
+  Buffer rtuDataBuffer;
+  Buffer asciiDataBuffer;
+  Buffer tcpDataBuffer;
   TickType_t readTimeout;
   TickType_t writeTimeout;
   TickType_t delayAfterRead = 0;
 
   uint16_t Crc(size_t size);
   uint8_t Lrc(size_t size);
-  void InitializeDataBuffer();
 };
 
 //==============================================================================
