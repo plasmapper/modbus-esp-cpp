@@ -12,7 +12,7 @@ namespace PL {
 class ModbusServer : public ModbusBase, public Server {
 public:
   /// @brief Default server name
-  static const std::string defaultName; 
+  static constexpr const char* defaultName = "Modbus Server"; 
   /// @brief Default read operation timeout in FreeRTOS ticks
   static constexpr TickType_t defaultReadTimeout = 3;
   /// @brief Default write operation timeout in FreeRTOS ticks

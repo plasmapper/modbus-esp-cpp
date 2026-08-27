@@ -13,8 +13,6 @@ namespace PL {
 
 const uint_fast8_t lowerBits[] =  {0, 0b1, 0b11, 0b111, 0b1111, 0b11111, 0b111111, 0b1111111, 0b11111111};
 
-const std::string ModbusServer::defaultName = "Modbus Server";
-
 //==============================================================================
 
 ModbusServer::ModbusServer(std::shared_ptr<Stream> stream, ModbusProtocol protocol, uint8_t stationAddress, std::shared_ptr<Buffer> buffer) :
