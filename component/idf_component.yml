@@ -1,4 +1,4 @@
-version: "1.4.2"
+version: "1.4.3"
 license: "MIT"
 description: Modbus C++ class component for ESP-IDF
 url: https://github.com/plasmapper/modbus-esp-cpp

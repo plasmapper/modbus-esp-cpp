@@ -154,7 +154,6 @@ esp_err_t ModbusBase::ReadFrame(Stream& stream, uint8_t& stationAddress, ModbusF
         StreamRead(stream, NULL, 2);
       vTaskDelay(delayAfterRead);
       ESP_RETURN_ON_ERROR(error, TAG, "read RTU data failed");
-      return ESP_OK;
     }
   }
 

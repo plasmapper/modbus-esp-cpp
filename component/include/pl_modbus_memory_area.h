@@ -39,7 +39,7 @@ public:
   /// @param lockable lockable object that is locked when this memory area is locked
   ModbusMemoryArea(ModbusMemoryType type, uint16_t address, void* data, size_t size, std::shared_ptr<Lockable> lockable);
   
-  /// @brief Callback method that is called when memory area is about to be read
+  /// @brief Callback method that is called when memory area is about to be read or written
   virtual esp_err_t OnRead();
   /// @brief Callback method that is called when memory area has just been written
   virtual esp_err_t OnWrite();
