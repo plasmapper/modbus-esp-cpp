@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ModbusServer::defaultName static initialization order dependency.
 - ModbusBase::WriteFrame returning ESP_ERR_INVALID_STATE without logging.
 
+### Removed
+- ModbusClient::buffer unused member.
+
 ## [1.4.2] - 2026-08-26
 ### Fixed
 - ModbusServer base server task not being stopped before the derived object is destroyed.

@@ -145,7 +145,6 @@ private:
   std::shared_ptr<Stream> stream;
   std::shared_ptr<TcpClient> tcpClient;
   uint8_t stationAddress;
-  std::shared_ptr<Buffer> buffer;
   uint16_t transactionId = 0;
   TickType_t broadcastTurnaroundDelay = defaultBroadcastTurnaroundDelay;
   
