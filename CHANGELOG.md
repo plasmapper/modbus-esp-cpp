@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Fixed
 - ModbusServer::defaultName static initialization order dependency.
+- ModbusBase::WriteFrame returning ESP_ERR_INVALID_STATE without logging.
 
 ## [1.4.2] - 2026-08-26
 ### Fixed

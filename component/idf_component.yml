@@ -4,5 +4,5 @@ description: Modbus C++ class component for ESP-IDF
 url: https://github.com/plasmapper/modbus-esp-cpp
 dependencies:
   idf: ">=5.3,<7.0"
-  plasmapper/pl_common: "^2.1.1"
-  plasmapper/pl_network: "^1.4.1"
+  plasmapper/pl_common: "^2.2.0"
+  plasmapper/pl_network: "^1.4.4"

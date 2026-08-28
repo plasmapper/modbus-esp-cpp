@@ -236,8 +236,7 @@ esp_err_t ModbusBase::ReadFrame(Stream& stream, uint8_t& stationAddress, ModbusF
 esp_err_t ModbusBase::WriteFrame(Stream& stream, uint8_t stationAddress, ModbusFunctionCode functionCode, size_t dataSize, uint16_t transactionId) {
   stream.SetWriteTimeout(writeTimeout);
 
-  if (protocol != ModbusProtocol::tcp && stream.GetReadableSize())
-    return ESP_ERR_INVALID_STATE;
+  ESP_RETURN_ON_FALSE(!stream.GetReadableSize() || protocol == ModbusProtocol::tcp, ESP_ERR_INVALID_STATE, TAG, "write aborted (stream has unread data)");
 
   if (protocol == ModbusProtocol::rtu) {
     ESP_RETURN_ON_FALSE(buffer->size >= dataSize + 4, ESP_ERR_INVALID_SIZE, TAG, "buffer is too small");
